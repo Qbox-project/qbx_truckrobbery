@@ -85,7 +85,7 @@ function AlertPolice()
 end
 
 RegisterNetEvent('AttackTransport:InfoForLspd', function(x, y, z)
-    if PlayerJob ~= nil and PlayerJob.name == 'police' then
+    if PlayerJob and PlayerJob.name == 'police' then
         if PoliceBlip == 0 then
             PoliceBlip = 1
 
@@ -146,7 +146,7 @@ RegisterNetEvent('qb-armoredtruckheist:client:911alert', function()
         local street2 = GetStreetNameFromHashKey(s2)
         local streetLabel = street1
 
-        if street2 ~= nil then
+        if street2 then
             streetLabel = streetLabel .. " " .. street2
         end
 

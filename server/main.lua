@@ -14,7 +14,7 @@ RegisterNetEvent('AttackTransport:akceptujto', function()
             for _, v in pairs(QBCore.Functions.GetPlayers()) do
                 local Player = QBCore.Functions.GetPlayer(v)
 
-                if Player ~= nil then
+                if Player then
                     if Player.PlayerData.job.name == "police" and Player.PlayerData.job.onduty then
                         copsOnDuty = copsOnDuty + 1
                     end
