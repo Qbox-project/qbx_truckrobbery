@@ -14,7 +14,10 @@ RegisterNetEvent('AttackTransport:akceptujto', function()
 
     if ActiveMission == 0 then
         if accountMoney < Config.ActivationCost then
-            TriggerClientEvent('QBCore:Notify', src, "You need $" .. Config.ActivationCost .. " in the bank to accept the mission")
+            TriggerClientEvent('ox_lib:notify', src, {
+                description = "You need $" .. Config.ActivationCost .. " in the bank to accept the mission",
+                type = 'error'
+            })
         else
             for _, v in pairs(QBCore.Functions.GetPlayers()) do
                 local Target = QBCore.Functions.GetPlayer(v)
@@ -33,11 +36,17 @@ RegisterNetEvent('AttackTransport:akceptujto', function()
 
                 OdpalTimer()
             else
-                TriggerClientEvent('QBCore:Notify', src, 'Need at least ' .. Config.ActivePolice .. ' SASP to activate the mission.')
+                TriggerClientEvent('ox_lib:notify', src, {
+                    description = 'Need at least ' .. Config.ActivePolice .. ' SASP to activate the mission.',
+                    type = 'error'
+                })
             end
         end
     else
-        TriggerClientEvent('QBCore:Notify', src, 'Someone is already carrying out this mission')
+        TriggerClientEvent('ox_lib:notify', src, {
+            description = 'Someone is already carrying out this mission',
+            type = 'error'
+        })
     end
 end)
 
@@ -75,7 +84,9 @@ RegisterNetEvent('AttackTransport:graczZrobilnapad', function()
 
     local chance = math.random(1, 100)
 
-    TriggerClientEvent('QBCore:Notify', src, 'You took ' .. bags .. ' bags of cash from the van')
+    TriggerClientEvent('ox_lib:notify', src, {
+        description = 'You took ' .. bags .. ' bags of cash from the van',
+    })
 
     if chance >= 95 then
         Player.Functions.AddItem('security_card_01', 1)
