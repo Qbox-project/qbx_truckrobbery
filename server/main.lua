@@ -5,6 +5,11 @@ RegisterNetEvent('AttackTransport:akceptujto', function()
     local copsOnDuty = 0
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
+
+    if not Player then
+        return
+    end
+
     local accountMoney = Player.PlayerData.money.bank
 
     if ActiveMission == 0 then
@@ -12,10 +17,10 @@ RegisterNetEvent('AttackTransport:akceptujto', function()
             TriggerClientEvent('QBCore:Notify', src, "You need $" .. Config.ActivationCost .. " in the bank to accept the mission")
         else
             for _, v in pairs(QBCore.Functions.GetPlayers()) do
-                local Player = QBCore.Functions.GetPlayer(v)
+                local Target = QBCore.Functions.GetPlayer(v)
 
-                if Player then
-                    if Player.PlayerData.job.name == "police" and Player.PlayerData.job.onduty then
+                if Target then
+                    if Target.PlayerData.job.name == "police" and Target.PlayerData.job.onduty then
                         copsOnDuty = copsOnDuty + 1
                     end
                 end
@@ -28,7 +33,7 @@ RegisterNetEvent('AttackTransport:akceptujto', function()
 
                 OdpalTimer()
             else
-                TriggerClientEvent('QBCore:Notify', src, 'Need at least ' .. Config.ActivePolice ..' SASP to activate the mission.')
+                TriggerClientEvent('QBCore:Notify', src, 'Need at least ' .. Config.ActivePolice .. ' SASP to activate the mission.')
             end
         end
     else
@@ -57,10 +62,15 @@ end)
 RegisterNetEvent('AttackTransport:graczZrobilnapad', function()
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
+
+    if not Player then
+        return
+    end
+
     local bags = math.random(1, 3)
 
     Player.Functions.AddItem('markedbills', bags, false, {
-    worth = math.random(Config.cashA, Config.cashB)
+        worth = Config.Cash
     })
 
     local chance = math.random(1, 100)
@@ -68,7 +78,7 @@ RegisterNetEvent('AttackTransport:graczZrobilnapad', function()
     TriggerClientEvent('QBCore:Notify', src, 'You took ' .. bags .. ' bags of cash from the van')
 
     if chance >= 95 then
-    Player.Functions.AddItem('security_card_01', 1)
+        Player.Functions.AddItem('security_card_01', 1)
     end
 
     Wait(2500)

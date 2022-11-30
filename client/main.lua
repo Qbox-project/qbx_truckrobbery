@@ -41,7 +41,7 @@ CreateThread(function()
             if not DoesEntityExist(dealer) then
                 lib.requestModel("s_m_y_dealer_01")
 
-                dealer = CreatePed(26, "s_m_y_dealer_01", Config.dealerCoords.x, Config.dealerCoords.y, Config.dealerCoords.z, 268.9422, false, false)
+                dealer = CreatePed(26, "s_m_y_dealer_01", Config.DealerCoords.x, Config.DealerCoords.y, Config.DealerCoords.z, 268.9422, false, false)
 
                 SetEntityHeading(dealer, 1.8)
                 SetBlockingOfNonTemporaryEvents(dealer, true)
@@ -233,26 +233,16 @@ RegisterNetEvent('AttackTransport:Pozwolwykonac', function()
     ClearPedTasks(dealer)
     TaskWanderStandard(dealer, 100, 100)
 
-    local DrawCoord = math.random(1, 5)
+    local DrawCoord = math.random(1, #Config.VehicleSpawns)
 
-    if DrawCoord == 1 then
-        VehicleCoords = Config.VehicleSpawn1
-    elseif DrawCoord == 2 then
-        VehicleCoords = Config.VehicleSpawn2
-    elseif DrawCoord == 3 then
-        VehicleCoords = Config.VehicleSpawn3
-    elseif DrawCoord == 4 then
-        VehicleCoords = Config.VehicleSpawn4
-    elseif DrawCoord == 5 then
-        VehicleCoords = Config.VehicleSpawn5
-    end
+    VehicleCoords = Config.VehicleSpawns[DrawCoord]
 
-    lib.requestModel(joaat('stockade'))
+    lib.requestModel(Config.VehicleModel)
 
     SetNewWaypoint(VehicleCoords.x, VehicleCoords.y)
     ClearAreaOfVehicles(VehicleCoords.x, VehicleCoords.y, VehicleCoords.z, 15.0, false, false, false, false, false)
 
-    transport = CreateVehicle(joaat('stockade'), VehicleCoords.x, VehicleCoords.y, VehicleCoords.z, 52.0, true, true)
+    transport = CreateVehicle(Config.VehicleModel, VehicleCoords.x, VehicleCoords.y, VehicleCoords.z, 52.0, true, true)
 
     SetEntityAsMissionEntity(transport)
 
