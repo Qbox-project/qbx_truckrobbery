@@ -1,4 +1,4 @@
-local QBCore = exports['qb-core']:GetCoreObject()
+local QBCore = exports['qbx-core']:GetCoreObject()
 local ActivePolice = 2  		--<< needed policemen to activate the mission
 local cashA = 250 				--<<how much minimum you can get from a robbery
 local cashB = 450				--<< how much maximum you can get from a robbery

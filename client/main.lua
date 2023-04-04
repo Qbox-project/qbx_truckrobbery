@@ -1,4 +1,4 @@
-local QBCore = exports['qb-core']:GetCoreObject()
+local QBCore = exports['qbx-core']:GetCoreObject()
 local MissionMarker = vector3(960.71197509766, -215.51979064941, 76.2552947998) -- <<place where is the marker with the mission
 local dealerCoords = vector3(960.78, -216.25, 76.25) 							-- << place where the NPC dealer stands
 local VehicleSpawn1 = vector3(-1327.479736328, -86.045326232910, 49.31) 		-- << below the coordinates for random vehicle responses
