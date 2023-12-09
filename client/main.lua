@@ -59,7 +59,6 @@ CreateThread(function()
 
         if dist <= 1.0 then
             DrawText3D('~g~[E]~b~ To accept missions', MissionMarker)
-                '~g~[E]~b~ To accept missions')
             if IsControlJustPressed(0, 38) then
                 TriggerServerEvent('AttackTransport:akceptujto')
                 Wait(500)
@@ -68,7 +67,6 @@ CreateThread(function()
 
     end
 end)
----
 
 function CheckGuards()
     if IsPedDeadOrDying(pilot) == 1 or IsPedDeadOrDying(navigator) == 1 then
@@ -163,11 +161,11 @@ RegisterNetEvent('qb-armoredtruckheist:client:robberyCall', function(streetLabel
             },
             details = {
                 [1] = {
-                    icon = '<i class='fas fa-university'></i>',
+                    icon = '<i class="fas fa-university"></i>',
                     detail = store
                 },
                 [2] = {
-                    icon = '<i class='fas fa-globe-europe'></i>',
+                    icon = '<i class="fas fa-globe-europe"></i>',
                     detail = streetLabel
                 }
             },
