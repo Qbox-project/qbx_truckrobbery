@@ -1,34 +1,28 @@
---- TODO: integrate with config and locales
-
-local numRequiredCops = 2  		--<< needed policemen to activate the mission
-local minReward = 250 				--<<how much minimum you can get from a robbery
-local maxReward = 450				--<< how much maximum you can get from a robbery
-local activationCost = 500		--<< how much is the activation of the mission (clean from the bank)
-local missionCooldown = 2700 * 1000  --<< timer every how many missions you can do, default is 600 seconds
+local config = require 'config.server'
 local isMissionAvailable = true
 
 RegisterServerEvent('truckrobbery:AcceptMission', function()
 	local src = source
 	local player = exports.qbx_core:GetPlayer(src)
 	if not isMissionAvailable then
-		exports.qbx_core:Notify(src, 'Someone is already carrying out this mission')
+		exports.qbx_core:Notify(src, Lang:t('error.already_active'), 'error')
 		return
 	end
-	if player.PlayerData.money.bank < activationCost then
-		exports.qbx_core:Notify( src, 'You need $'..activationCost..' in the bank to accept the mission')
+	if player.PlayerData.money.bank < config.activationCost then
+		exports.qbx_core:Notify(src, Lang:t('mission.activation_cost', {cost = config.activationCost}), 'inform')
 		return
 	end
 
 	local numCops = exports.qbx_core:GetDutyCountType('leo')
-	if numCops < numRequiredCops then
-		exports.qbx_core:Notify(src, 'Need at least '..numRequiredCops.. ' SASP to activate the mission.')
+	if numCops < config.numRequiredPolice then
+		exports.qbx_core:Notify(src, Lang:t('error.active_police', {police = config.numRequiredPolice}), 'error')
 		return
 	end
 
 	TriggerClientEvent("truckrobbery:StartMission", src)
-	player.Functions.RemoveMoney('bank', activationCost, 'armored-truck')
+	player.Functions.RemoveMoney('bank', config.activationCost, 'armored-truck')
 	isMissionAvailable = false
-	Wait(missionCooldown)
+	Wait(config.missionCooldown)
 	isMissionAvailable = true
 	TriggerClientEvent('truckrobbery:CleanUp', -1)
 end)
@@ -57,10 +51,10 @@ RegisterServerEvent('truckrobbery:RobberySucess', function()
 	local player = exports.qbx_core:GetPlayer(src)
 	local bags = math.random(1,3)
 	local info = {
-		worth = math.random(minReward, maxReward)
+		worth = math.random(config.minReward, config.maxReward)
 	}
 	player.Functions.AddItem('markedbills', bags, false, info)
-	exports.qbx_core:Notify(src, 'You took '..bags..' bags of cash from the van')
+	exports.qbx_core:Notify(src, Lang:t('success.took_bags', {bags = bags}), 'success')
 	if math.random() <= 0.05 then
 		player.Functions.AddItem('security_card_01', 1)
 	end

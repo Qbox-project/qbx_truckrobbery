@@ -3,15 +3,15 @@ local Translations = {
      get_out_water = 'Sortez de l\'eau',
      guards_dead = 'Les gardes doivent être morts pour placer la bombe',
      truck_ismoving = 'Vous ne pouvez pas braquer un camion en mouvement.',
-     activepolice = 'Il faut au moins %{ActivePolice} Policiers pour activer la mission.',
-     alreadyactive = 'Quelqu\'un est déjà en train de faire cette mission',
+     active_police = 'Il faut au moins %{police} policiers pour activer la mission.',
+     already_active = 'Quelqu\'un est déjà en train de faire cette mission',
     },
     success = {
       packing_cash = 'Vous êtes entrain de remplir le sac!',
       took_bags = 'Vous avez pris %{bags} sacs de cash du camion',
     },
     mission = {
-      activation_cost = "Vous avez besoin de $ %{ActivationCost} en banque pour accepter la mission",
+      activation_cost = "Vous avez besoin de $ %{cost} en banque pour accepter la mission",
       accept_mission_target = 'Accepter la mission',
       accept_mission = '~g~[E]~b~ Accepter la mission',
       stockade = 'Stockade',
@@ -32,7 +32,6 @@ local Translations = {
       cop_Blip = "10-90: Braquage de Transport de Fonds",
       alerttitle = "Braquage de Transport de Fonds",
       alert_desc = "Un Transport de Fonds se fait braquer!",
-      policeblip = 'Assaut sur le Transport de fonds',
       grabing_money = 'Vous prenez l\'argent..'
     },
 }
