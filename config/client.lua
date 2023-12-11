@@ -15,8 +15,8 @@ return {
 
     routeColor = 6, -- Color of the route
 
-    driverWeapon = "WEAPON_COMBATPISTOL", -- Weapon of the driver
-    passengerWeapon = "WEAPON_COMBATPISTOL", -- Weapon of the passenger
+    driverWeapon = `WEAPON_COMBATPISTOL`, -- Weapon of the driver
+    passengerWeapon = `WEAPON_COMBATPISTOL`, -- Weapon of the passenger
     truckModel = 'Stockade', -- Model of the truck
     dealerModel = "s_m_y_dealer_01", -- Model of the NPC that gives the mission
     guardModel = "s_m_m_security_01", -- Model of the guard
