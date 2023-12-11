@@ -4,7 +4,6 @@ local bowBackdoor = 0
 local policeAlert = 0
 local lootTime = 1
 local guardsDead = 0
-local prop
 local lootable = 0
 local blownUp = 0
 local truckBlip
