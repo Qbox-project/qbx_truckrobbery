@@ -1,3 +1,5 @@
+--- TODO: integrate with config and locales
+
 local numRequiredCops = 2  		--<< needed policemen to activate the mission
 local minReward = 250 				--<<how much minimum you can get from a robbery
 local maxReward = 450				--<< how much maximum you can get from a robbery
@@ -5,7 +7,7 @@ local activationCost = 500		--<< how much is the activation of the mission (clea
 local missionCooldown = 2700 * 1000  --<< timer every how many missions you can do, default is 600 seconds
 local isMissionAvailable = true
 
-RegisterServerEvent('AttackTransport:akceptujto', function()
+RegisterServerEvent('truckrobbery:AcceptMission', function()
 	local src = source
 	local player = exports.qbx_core:GetPlayer(src)
 	if not isMissionAvailable then
@@ -23,23 +25,34 @@ RegisterServerEvent('AttackTransport:akceptujto', function()
 		return
 	end
 
-	TriggerClientEvent('AttackTransport:Pozwolwykonac', src)
+	TriggerClientEvent("truckrobbery:StartMission", src)
 	player.Functions.RemoveMoney('bank', activationCost, 'armored-truck')
 	isMissionAvailable = false
 	Wait(missionCooldown)
 	isMissionAvailable = true
-	TriggerClientEvent('AttackTransport:CleanUp', -1)
+	TriggerClientEvent('truckrobbery:CleanUp', -1)
 end)
 
-RegisterServerEvent('qb-armoredtruckheist:server:callCops', function(streetLabel, coords)
-    TriggerClientEvent('qb-armoredtruckheist:client:robberyCall', -1, streetLabel, coords)
+RegisterNetEvent('truckrobbery:server:callCops', function(coords)
+	local msg = Lang:t("info.alert_desc")
+    local alertData = {
+        title = Lang:t("info.alerttitle"),
+        coords = {
+            x = coords.x,
+            y = coords.y,
+            z = coords.z
+        },
+        description = msg
+    }
+	local numCops, copSrcs = exports.qbx_core:GetDutyCountType('leo')
+	for i = 1, numCops do
+		local copSrc = copSrcs[i]
+		TriggerClientEvent("truckrobbery:client:robberyCall", copSrc, msg, coords)
+		TriggerClientEvent("qb-phone:client:addPoliceAlert", copSrc, alertData)
+	end
 end)
 
-RegisterServerEvent('AttackTransport:zawiadompsy', function(x ,y, z)
-    TriggerClientEvent('AttackTransport:InfoForLspd', -1, x, y, z)
-end)
-
-RegisterServerEvent('AttackTransport:graczZrobilnapad', function()
+RegisterServerEvent('truckrobbery:RobberySucess', function()
 	local src = source
 	local player = exports.qbx_core:GetPlayer(src)
 	local bags = math.random(1,3)
