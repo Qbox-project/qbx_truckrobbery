@@ -1,73 +1,54 @@
-local ActivePolice = 2  		--<< needed policemen to activate the mission
-local cashA = 250 				--<<how much minimum you can get from a robbery
-local cashB = 450				--<< how much maximum you can get from a robbery
-local ActivationCost = 500		--<< how much is the activation of the mission (clean from the bank)
-local ResetTimer = 2700 * 1000  --<< timer every how many missions you can do, default is 600 seconds
-local ActiveMission = 0
-local ITEMS = exports.ox_inventory:Items()
+local numRequiredCops = 2  		--<< needed policemen to activate the mission
+local minReward = 250 				--<<how much minimum you can get from a robbery
+local maxReward = 450				--<< how much maximum you can get from a robbery
+local activationCost = 500		--<< how much is the activation of the mission (clean from the bank)
+local missionCooldown = 2700 * 1000  --<< timer every how many missions you can do, default is 600 seconds
+local isMissionAvailable = true
 
 RegisterServerEvent('AttackTransport:akceptujto', function()
-	local copsOnDuty = 0
-	local _source = source
-	local xPlayer = exports.qbx_core:GetPlayer(_source)
-	local accountMoney = xPlayer.PlayerData.money['bank']
-	if ActiveMission == 0 then
-		if accountMoney < ActivationCost then
-			exports.qbx_core:Notify( _source, 'You need $'..ActivationCost..' in the bank to accept the mission')
-		else
-			for _, v in pairs(exports.qbx_core:GetPlayers()) do
-				local Player = exports.qbx_core:GetPlayer(v)
-				if Player ~= nil then
-					if (Player.PlayerData.job.name == 'police' and Player.PlayerData.job.onduty) then
-						copsOnDuty = copsOnDuty + 1
-					end
-				end
-			end
-			if copsOnDuty >= ActivePolice then
-				TriggerClientEvent('AttackTransport:Pozwolwykonac', _source)
-				xPlayer.Functions.RemoveMoney('bank', ActivationCost, 'armored-truck')
-
-				OdpalTimer()
-			else
-				exports.qbx_core:Notify(_source, 'Need at least '..ActivePolice.. ' SASP to activate the mission.')
-			end
-		end
-	else
-		exports.qbx_core:Notify(_source, 'Someone is already carrying out this mission')
+	local src = source
+	local player = exports.qbx_core:GetPlayer(src)
+	if not isMissionAvailable then
+		exports.qbx_core:Notify(src, 'Someone is already carrying out this mission')
+		return
 	end
+	if player.PlayerData.money.bank < activationCost then
+		exports.qbx_core:Notify( src, 'You need $'..activationCost..' in the bank to accept the mission')
+		return
+	end
+
+	local numCops = exports.qbx_core:GetDutyCountType('leo')
+	if numCops < numRequiredCops then
+		exports.qbx_core:Notify(src, 'Need at least '..numRequiredCops.. ' SASP to activate the mission.')
+		return
+	end
+
+	TriggerClientEvent('AttackTransport:Pozwolwykonac', src)
+	player.Functions.RemoveMoney('bank', activationCost, 'armored-truck')
+	isMissionAvailable = false
+	Wait(missionCooldown)
+	isMissionAvailable = true
+	TriggerClientEvent('AttackTransport:CleanUp', -1)
 end)
 
 RegisterServerEvent('qb-armoredtruckheist:server:callCops', function(streetLabel, coords)
     TriggerClientEvent('qb-armoredtruckheist:client:robberyCall', -1, streetLabel, coords)
 end)
 
-function OdpalTimer()
-	ActiveMission = 1
-	Wait(ResetTimer)
-	ActiveMission = 0
-	TriggerClientEvent('AttackTransport:CleanUp', -1)
-end
-
 RegisterServerEvent('AttackTransport:zawiadompsy', function(x ,y, z)
     TriggerClientEvent('AttackTransport:InfoForLspd', -1, x, y, z)
 end)
 
 RegisterServerEvent('AttackTransport:graczZrobilnapad', function()
-	local _source = source
-	local xPlayer = exports.qbx_core:GetPlayer(_source)
+	local src = source
+	local player = exports.qbx_core:GetPlayer(src)
 	local bags = math.random(1,3)
 	local info = {
-		worth = math.random(cashA, cashB)
+		worth = math.random(minReward, maxReward)
 	}
-	xPlayer.Functions.AddItem('markedbills', bags, false, info)
-	TriggerClientEvent('inventory:client:ItemBox', _source, ITEMS['markedbills'], 'add')
-
-	local chance = math.random(1, 100)
-	exports.qbx_core:Notify(_source, 'You took '..bags..' bags of cash from the van')
-
-	if chance >= 95 then
-		xPlayer.Functions.AddItem('security_card_01', 1)
-		TriggerClientEvent('inventory:client:ItemBox', _source, ITEMS['security_card_01'], 'add')
+	player.Functions.AddItem('markedbills', bags, false, info)
+	exports.qbx_core:Notify(src, 'You took '..bags..' bags of cash from the van')
+	if math.random() <= 0.05 then
+		player.Functions.AddItem('security_card_01', 1)
 	end
-	Wait(2500)
 end)
