@@ -1,10 +1,8 @@
 local config = require 'config.client'
-local pickupMoney = 0
 local bowBackdoor = 0
 local policeAlert = 0
 local lootTime = 1
-local guardsDead = 0
-local lootable = 0
+local guardsDead = false
 local blownUp = 0
 local truckBlip
 local transport
@@ -65,7 +63,7 @@ end)
 
 function CheckGuards()
 	if IsPedDeadOrDying(pilot) and IsPedDeadOrDying(navigator) then
-		guardsDead = 1
+		guardsDead = true
 	end
 	Wait(500)
 end
@@ -179,9 +177,9 @@ CreateThread(function()
 					exports.qbx_core:Notify(Lang:t('info.before_bomb'), 'error')
 				end
 
-				if guardsDead == 0 then
+				if not guardsDead then
 					CheckGuards()
-				elseif guardsDead == 1 and blownUp == 0 then
+				elseif guardsDead and blownUp == 0 then
 					TriggerEvent('truckrobbery:client:911alert')
 				end
 			else
@@ -191,9 +189,9 @@ CreateThread(function()
 			if dist <= 7 and blownUp == 0  then
 				if QBX.PlayerData.job.type == 'leo' then
 
-					if guardsDead == 1 and blownUp == 0 then
+					if guardsDead and blownUp == 0 then
 						if config.useTarget then
-							if bowBackdoor == 0 and guardsDead == 1 then
+							if bowBackdoor == 0 and guardsDead then
 								exports.qbx_core:Notify(Lang:t('info.detonate_bomb_target'), 'inform')
 								bowBackdoor = 1
 							end
@@ -218,7 +216,7 @@ CreateThread(function()
 								exports.qbx_core:Notify(Lang:t('info.detonate_bomb'), 'inform')
 								bowBackdoor = 1
 							end
-							if IsControlPressed(0, 47) and guardsDead == 1 then
+							if IsControlPressed(0, 47) and guardsDead then
 								CheckVehicleInformation()
 								Wait(500)
 							end
@@ -233,127 +231,120 @@ CreateThread(function()
 end)
 
 function CheckVehicleInformation()
-	if IsVehicleStopped(transport) then
-		if guardsDead == 1 then
-			if not IsEntityInWater(cache.ped) then
-				if config.useTarget then
-					exports.ox_target:removeLocalEntity(transport, 'transportPlant')
-				end
-				blownUp = 1
-				SetCurrentPedWeapon(cache.ped, `WEAPON_UNARMED`,true)
-				Wait(500)
+	if not IsVehicleStopped(transport) then
+		exports.qbx_core:Notify(Lang:t('error.truck_ismoving'), 'error')
+		return
+	end
+	if not guardsDead then
+		exports.qbx_core:Notify(Lang:t('error.guards_dead'), 'error')
+		return
+	end
+	if IsEntityInWater(cache.ped) then
+		exports.qbx_core:Notify(Lang:t('info.get_out_water'), 'error')
+		return
+	end
+	if config.useTarget then
+		exports.ox_target:removeLocalEntity(transport, 'transportPlant')
+	end
+	blownUp = 1
+	SetCurrentPedWeapon(cache.ped, `WEAPON_UNARMED`,true)
+	Wait(500)
 
-				if lib.progressBar({
-                    duration = 5000,
-                    label = Lang:t('info.planting_bomb'),
-                    useWhileDead = false,
-                    canCancel = true,
-                    disable = {
-                        move = true,
-                        car = true,
-                        combat = true,
-                        mouse = false,
-                    },
-                    anim = {
-                        dict = 'anim@heists@ornate_bank@thermal_charge_heels',
-                        clip = 'thermal_charge',
-                        flag = 16,
-                    },
-                    prop = {
-                        model = `prop_c4_final_green`,
-                        pos = {
-                            x = 0.06,
-                            y = 0.0,
-                            z = 0.06,
-                        },
-                        rot = {
-                            x = 90.0,
-                            y = 0.0,
-                            z = 0.0,
-                        },
-                    }
-                }) then
-                    local coords = GetEntityCoords(cache.ped)
-                    local prop = CreateObject(`prop_c4_final_green`, coords.x, coords.y, coords.z + 0.2,  true,  true, true)
-					AttachEntityToEntity(prop, transport, GetEntityBoneIndexByName(transport, 'door_pside_r'), -0.7, 0.0, 0.0, 0.0, 0.0, 0.0, true, true, false, true, 1, true)
-					exports.qbx_core:Notify(Lang:t('info.bomb_timer', {TimeToBlow = config.timetoDetonation / 1000}), 'error')
-					Wait(config.timetoDetonation)
-					local transCoords = GetEntityCoords(transport)
-					SetVehicleDoorBroken(transport, 2, false)
-					SetVehicleDoorBroken(transport, 3, false)
-					AddExplosion(transCoords.x,transCoords.y,transCoords.z, 'EXPLOSION_TANKER', 2.0, true, false, 2.0)
-					ApplyForceToEntity(transport, 0, 20.0, 500.0, 0.0, 0.0, 0.0, 0.0, 1, false, true, true, false, true)
-					lootable = 1
-					exports.qbx_core:Notify(Lang:t('info.collect'), 'success')
-				else
-					blownUp = 0
-				end
-			else
-				exports.qbx_core:Notify(Lang:t('info.get_out_water'), 'error')
-			end
+	if lib.progressBar({
+		duration = 5000,
+		label = Lang:t('info.planting_bomb'),
+		useWhileDead = false,
+		canCancel = true,
+		disable = {
+			move = true,
+			car = true,
+			combat = true,
+			mouse = false,
+		},
+		anim = {
+			dict = 'anim@heists@ornate_bank@thermal_charge_heels',
+			clip = 'thermal_charge',
+			flag = 16,
+		},
+		prop = {
+			model = `prop_c4_final_green`,
+			pos = {
+				x = 0.06,
+				y = 0.0,
+				z = 0.06,
+			},
+			rot = {
+				x = 90.0,
+				y = 0.0,
+				z = 0.0,
+			},
+		}
+	}) then
+		local coords = GetEntityCoords(cache.ped)
+		local prop = CreateObject(`prop_c4_final_green`, coords.x, coords.y, coords.z + 0.2,  true,  true, true)
+		AttachEntityToEntity(prop, transport, GetEntityBoneIndexByName(transport, 'door_pside_r'), -0.7, 0.0, 0.0, 0.0, 0.0, 0.0, true, true, false, true, 1, true)
+		exports.qbx_core:Notify(Lang:t('info.bomb_timer', {TimeToBlow = config.timetoDetonation / 1000}), 'error')
+		Wait(config.timetoDetonation)
+		local transCoords = GetEntityCoords(transport)
+		SetVehicleDoorBroken(transport, 2, false)
+		SetVehicleDoorBroken(transport, 3, false)
+		AddExplosion(transCoords.x,transCoords.y,transCoords.z, 'EXPLOSION_TANKER', 2.0, true, false, 2.0)
+		ApplyForceToEntity(transport, 0, 20.0, 500.0, 0.0, 0.0, 0.0, 0.0, 1, false, true, true, false, true)
+
+		exports.qbx_core:Notify(Lang:t('info.collect'), 'success')
+		local plyCoords = GetEntityCoords(cache.ped, false)
+		local transCoords = GetEntityCoords(transport)
+		local dist = #(plyCoords - transCoords)
+
+		if dist > 45.0 then
+			Wait(500)
+		end
+
+		if config.useTarget then
+			exports.ox_target:addLocalEntity(transport, {
+				name = 'transportTake',
+				label = Lang:t('info.take_money_target'),
+				icon = 'fas fa-sack-dollar',
+				canInteract = function()
+					return QBX.PlayerData.job.type ~= 'leo'
+				end,
+				onSelect = TakingMoney,
+				distance = 3.0,
+			})
 		else
-			exports.qbx_core:Notify(Lang:t('error.guards_dead'), 'error')
+			local point = lib.points.new({
+				coords = GetEntityCoords(cache.ped),
+				distance = 3.0,
+			})
+
+			function point:onEnter()
+				if QBX.PlayerData.job.type ~= 'leo' then
+					lib.showTextUI(Lang:t('info.take_money_target'))
+				end
+			end
+
+			function point:onExit()
+				lib.hideTextUI()
+			end
+
+			function point:nearby()
+				if IsControlJustPressed(0, 38) and QBX.PlayerData.job.type ~= 'leo' then
+					TakingMoney()
+				end
+			end
 		end
 	else
-		exports.qbx_core:Notify(Lang:t('error.truck_ismoving'), 'error')
+		blownUp = 0
 	end
 end
-
-CreateThread(function()
-    while true do
-        Wait(5)
-
-		if lootable == 1 then
-			local plyCoords = GetEntityCoords(cache.ped, false)
-			local transCoords = GetEntityCoords(transport)
-            local dist = #(plyCoords - transCoords)
-
-            if dist > 45.0 then
-                Wait(500)
-            end
-
-			if config.useTarget then
-				exports.ox_target:addLocalEntity(transport, {
-					name = 'transportTake',
-					label = Lang:t('info.take_money_target'),
-					icon = 'fas fa-sack-dollar',
-					canInteract = function()
-						if QBX.PlayerData.job.type == 'leo' or not lootable then return false end
-						return true
-					end,
-					onSelect = function()
-						if QBX.PlayerData.job.type == 'leo' then return false end
-						if lootable then
-							TakingMoney()
-						end
-					end,
-					distance = 3.0,
-				})
-			else
-				if dist <= 4.5 then
-					if pickupMoney == 0 then
-						exports.qbx_core:Notify(Lang:t('info.take_money'), 'inform', 7500)
-						pickupMoney = 1
-					end
-						if IsControlJustPressed(0, 38) and lootable then
-						TakingMoney()
-						Wait(500)
-					end
-				end
-			end
-		else
-			Wait(1500)
-		end
-	end
-end)
 
 RegisterNetEvent('truckrobbery:CleanUp', function()
     pickupMoney = 0
     bowBackdoor = 0
     policeAlert = 0
     lootTime = 1
-    guardsDead = 0
-    lootable = 0
+    guardsDead = false
+    lootable = false
     blownUp = 0
     missionStart = 0
     warning = 0
@@ -362,51 +353,46 @@ RegisterNetEvent('truckrobbery:CleanUp', function()
 end)
 
 function TakingMoney()
-	if lootable == 1 then
-		lootable = 0
-		if config.useTarget then
-			exports.ox_target:removeLocalEntity(transport, 'transportTake')
-		end
-		exports.qbx_core:Notify(Lang:t('success.packing_cash'), 'success')
-		local _time = GetGameTimer()
+	if config.useTarget then
+		exports.ox_target:removeLocalEntity(transport, 'transportTake')
+	end
+	exports.qbx_core:Notify(Lang:t('success.packing_cash'), 'success')
+	local _time = GetGameTimer()
 
-        if lib.progressBar({
-            duration = 5000,
-            label = Lang:t('info.grabing_money'),
-            useWhileDead = false,
-            canCancel = true,
-            disable = {
-                move = true,
-                car = true,
-                combat = true,
-                mouse = false,
-            },
-            anim = {
-                dict = 'anim@heists@ornate_bank@grab_cash_heels',
-                clip = 'grab',
-                flag = 1,
-            },
-            prop = {
-                model = `prop_cs_heist_bag_02`,
-                bone = 57005,
-                pos = {
-                    x = 0.0,
-                    y = 0.0,
-                    z = -0.16,
-                },
-                rot = {
-                    x = 250.0,
-                    y = -30.0,
-                    z = 0.0,
-                },
-            }
-        }) then
-			lootTime = GetGameTimer() - _time
-			SetPedComponentVariation(cache.ped, 5, 45, 0, 2)
-			TriggerServerEvent('truckrobbery:RobberySucess', lootTime)
-			TriggerEvent('truckrobbery:CleanUp')
-        else
-			lootable = 1
-		end
+	if lib.progressBar({
+		duration = 5000,
+		label = Lang:t('info.grabing_money'),
+		useWhileDead = false,
+		canCancel = true,
+		disable = {
+			move = true,
+			car = true,
+			combat = true,
+			mouse = false,
+		},
+		anim = {
+			dict = 'anim@heists@ornate_bank@grab_cash_heels',
+			clip = 'grab',
+			flag = 1,
+		},
+		prop = {
+			model = `prop_cs_heist_bag_02`,
+			bone = 57005,
+			pos = {
+				x = 0.0,
+				y = 0.0,
+				z = -0.16,
+			},
+			rot = {
+				x = 250.0,
+				y = -30.0,
+				z = 0.0,
+			},
+		}
+	}) then
+		lootTime = GetGameTimer() - _time
+		SetPedComponentVariation(cache.ped, 5, 45, 0, 2)
+		TriggerServerEvent('truckrobbery:RobberySucess', lootTime)
+		TriggerEvent('truckrobbery:CleanUp')
 	end
 end
