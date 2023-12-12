@@ -1,6 +1,4 @@
 return {
-    useTarget = false,
-
     missionMarker = vec3(960.71197509766, -215.51979064941, 76.2552947998), -- Marker to start mission
     dealerCoords = vec3(960.78, -216.25, 76.25), -- place where the NPC stands
 
