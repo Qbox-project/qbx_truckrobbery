@@ -21,7 +21,6 @@ local Translations = {
     },
     info = {
       before_bomb = 'Get rid of the guards before you place the bomb.',
-      detonate_bomb = 'Press [G] to blow up the back door and take the money',
       detonate_bomb_target = 'Plant the Bomb',
       plant_bomb = 'Plant the Bomb',
       planting_bomb = 'Planting the Bomb..',

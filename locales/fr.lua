@@ -21,7 +21,6 @@ local Translations = {
     },
     info = {
       before_bomb = 'Débarassez vous des gardes avant de placer la bombe.',
-      detonate_bomb = 'Appuyez sur [G] pour exploser la porte arrière et prendre le cash',
       detonate_bomb_target = 'Posez la bombe',
       plant_bomb = 'Poser la bombe',
       planting_bomb = 'Pose la bombe..',

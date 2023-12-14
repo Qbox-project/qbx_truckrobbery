@@ -1,85 +1,44 @@
 local config = require 'config.client'
-local pickupMoney = 0
-local bowBackdoor = 0
-local policeAlert = 0
-local lootTime = 1
-local guardsDead = 0
-local lootable = 0
-local blownUp = 0
+local guardsDead = false
 local truckBlip
-local transport
-local missionStart = 0
-local warning = 0
-local vehicleCoords = nil
-local dealer
-local pilot = nil
-local navigator = nil
+local truck
+local missionStarted = false
+local dealer, pilot, navigator
 
-CreateThread(function()
-    while true do
-        Wait(2)
-		local plyCoords = GetEntityCoords(cache.ped, false)
-		local dist = #(plyCoords - vec3(config.missionMarker.x, config.missionMarker.y, config.missionMarker.z))
+AddEventHandler('onResourceStart', function(resource)
+	if resource ~= GetCurrentResourceName() then return end
+	lib.requestModel(config.dealerModel)
+	dealer = CreatePed(26, config.dealerModel, config.dealerCoords.x, config.dealerCoords.y, config.dealerCoords.z, 268.9422, false, false)
+	SetEntityHeading(dealer, 1.8)
+	SetBlockingOfNonTemporaryEvents(dealer, true)
+	TaskStartScenarioInPlace(dealer, 'WORLD_HUMAN_AA_SMOKE', 0, false)
 
-		if dist <= 50.0 and QBX.PlayerData.job.type == 'leo' then
-		if not DoesEntityExist(dealer) then
-				lib.requestModel(config.dealerModel)
-				dealer = CreatePed(26, config.dealerModel, config.dealerModelCoords.x, config.dealerModelCoords.y, config.dealerModelCoords.z, 268.9422, false, false)
-				SetEntityHeading(dealer, 1.8)
-				SetBlockingOfNonTemporaryEvents(dealer, true)
-				TaskStartScenarioInPlace(dealer, 'WORLD_HUMAN_AA_SMOKE', 0, false)
-			end
-			if missionStart == 0 and dist <= 2 then
-				if config.useTarget then
-					exports.ox_target:addLocalEntity(dealer, {
-						name = 'dealer',
-						label = Lang:t('mission.accept_mission_target'),
-						icon = 'fas fa-circle-check',
-						serverEvent = 'truckrobbery:AcceptMission',
-						canInteract = function()
-							if QBX.PlayerData.job.type == 'leo' then return false end
-							return true
-						end,
-						distance = 3.0,
-					})
-				else
-					DrawMarker(25, config.dealerModelCoords.x, config.dealerModelCoords.y, config.dealerModelCoords.z - 0.90, 0, 0, 0, 0, 0, 0, 1.301, 1.3001, 1.3001, 0, 205, 250, 200, 0, 0, 0, 0)
-					if dist <= 1.5 then
-						DrawText3D(Lang:t('mission.accept_mission'), config.dealerModelCoords)
-						if IsControlJustPressed(0, 38) and dist <= 4.0 then
-							TriggerServerEvent('truckrobbery:AcceptMission')
-							Wait(500)
-						end
-					end
-				end
-			else
-				exports.ox_target:removeLocalEntity(dealer, 'dealer')
-			end
-		elseif DoesEntityExist(dealer) then
-			DeleteEntity(dealer)
-		else
-			Wait(1500)
-		end
-	end
+	exports.ox_target:addLocalEntity(dealer, {
+		name = 'dealer',
+		label = Lang:t('mission.accept_mission_target'),
+		icon = 'fas fa-circle-check',
+		canInteract = function()
+			return not missionStarted and QBX.PlayerData.job.type ~= 'leo'
+		end,
+		onSelect = function()
+			lib.callback('qbx_truckrobbery:server:startMission')
+		end,
+		distance = 3.0,
+	})
 end)
 
-function CheckGuards()
-	if IsPedDeadOrDying(pilot) and IsPedDeadOrDying(navigator) then
-		guardsDead = 1
-	end
-	Wait(500)
+AddEventHandler('onResourceStop', function(resource)
+	if resource ~= GetCurrentResourceName() then return end
+	exports.ox_target:removeLocalEntity(dealer)
+	DeletePed(dealer)
+end)
+
+local function callCops()
+	lib.callback('qbx_truckrobbery:server:callCops', false, nil, GetEntityCoords(truck))
+	PlaySoundFrontend(-1, 'Mission_Pass_Notify', 'DLC_HEISTS_GENERAL_FRONTEND_SOUNDS', false)
 end
 
-RegisterNetEvent('truckrobbery:client:911alert', function()
-    if policeAlert == 0 then
-        local transCoords = GetEntityCoords(transport)
-        TriggerServerEvent('truckrobbery:server:callCops', transCoords)
-        PlaySoundFrontend(-1, 'Mission_Pass_Notify', 'DLC_HEISTS_GENERAL_FRONTEND_SOUNDS', false)
-        policeAlert = 1
-    end
-end)
-
-RegisterNetEvent('truckrobbery:client:robberyCall', function(msg, coords)
+lib.callback.register('qbx_truckrobbery:client:notifyCop', function(msg, coords)
     PlaySound(-1, 'Lose_1st', 'GTAO_FM_Events_Soundset', false, 0, true)
     exports.qbx_core:Notify(msg, 'police', 10000)
 
@@ -106,25 +65,157 @@ RegisterNetEvent('truckrobbery:client:robberyCall', function(msg, coords)
     end
 end)
 
-function MissionNotification()
+local function resetMission()
+    guardsDead = false
+    missionStarted = false
+    RemoveBlip(truckBlip)
+	SetBlipRoute(truckBlip, false)
+end
+
+lib.callback.register('qbx_truckrobbery:resetMission', resetMission)
+
+local function grabMoney()
+	exports.qbx_core:Notify(Lang:t('success.packing_cash'), 'success')
+
+	if lib.progressBar({
+		duration = 5000,
+		label = Lang:t('info.grabing_money'),
+		useWhileDead = false,
+		canCancel = true,
+		disable = {
+			move = true,
+			car = true,
+			combat = true,
+			mouse = false,
+		},
+		anim = {
+			dict = 'anim@heists@ornate_bank@grab_cash_heels',
+			clip = 'grab',
+			flag = 1,
+		},
+		prop = {
+			model = `prop_cs_heist_bag_02`,
+			bone = 57005,
+			pos = {
+				x = 0.0,
+				y = 0.0,
+				z = -0.16,
+			},
+			rot = {
+				x = 250.0,
+				y = -30.0,
+				z = 0.0,
+			},
+		}
+	}) then
+		exports.ox_target:removeLocalEntity(truck, 'transportTake')
+		SetPedComponentVariation(cache.ped, 5, 45, 0, 2)
+		lib.callback('qbx_truckrobbery:server:giveReward')
+		resetMission()
+	end
+end
+
+local function plantBomb()
+	if not IsVehicleStopped(truck) then
+		exports.qbx_core:Notify(Lang:t('error.truck_ismoving'), 'error')
+		return
+	end
+	if not guardsDead then
+		exports.qbx_core:Notify(Lang:t('error.guards_dead'), 'error')
+		return
+	end
+	if IsEntityInWater(cache.ped) then
+		exports.qbx_core:Notify(Lang:t('info.get_out_water'), 'error')
+		return
+	end
+	exports.ox_target:removeLocalEntity(truck, 'transportPlant')
+	SetCurrentPedWeapon(cache.ped, `WEAPON_UNARMED`,true)
+	Wait(500)
+
+	if lib.progressBar({
+		duration = 5000,
+		label = Lang:t('info.planting_bomb'),
+		useWhileDead = false,
+		canCancel = true,
+		disable = {
+			move = true,
+			car = true,
+			combat = true,
+			mouse = false,
+		},
+		anim = {
+			dict = 'anim@heists@ornate_bank@thermal_charge_heels',
+			clip = 'thermal_charge',
+			flag = 16,
+		},
+		prop = {
+			model = `prop_c4_final_green`,
+			pos = {
+				x = 0.06,
+				y = 0.0,
+				z = 0.06,
+			},
+			rot = {
+				x = 90.0,
+				y = 0.0,
+				z = 0.0,
+			},
+		}
+	}) then
+		exports.ox_target:removeLocalEntity(truck, 'transportPlant')
+		local coords = GetEntityCoords(cache.ped)
+		local prop = CreateObject(`prop_c4_final_green`, coords.x, coords.y, coords.z + 0.2,  true,  true, true)
+		AttachEntityToEntity(prop, truck, GetEntityBoneIndexByName(truck, 'door_pside_r'), -0.7, 0.0, 0.0, 0.0, 0.0, 0.0, true, true, false, true, 1, true)
+		exports.qbx_core:Notify(Lang:t('info.bomb_timer', {TimeToBlow = config.timetoDetonation / 1000}), 'error')
+		Wait(config.timetoDetonation)
+		local transCoords = GetEntityCoords(truck)
+		SetVehicleDoorBroken(truck, 2, false)
+		SetVehicleDoorBroken(truck, 3, false)
+		AddExplosion(transCoords.x,transCoords.y,transCoords.z, 'EXPLOSION_TANKER', 2.0, true, false, 2.0)
+		ApplyForceToEntity(truck, 0, 20.0, 500.0, 0.0, 0.0, 0.0, 0.0, 1, false, true, true, false, true)
+
+		exports.qbx_core:Notify(Lang:t('info.collect'), 'success')
+		--- TODO: seems like these targets should be added for all players instead of just the bomb planter
+		exports.ox_target:addLocalEntity(truck, {
+			name = 'transportTake',
+			label = Lang:t('info.take_money_target'),
+			icon = 'fas fa-sack-dollar',
+			canInteract = function()
+				return QBX.PlayerData.job.type ~= 'leo'
+			end,
+			onSelect = grabMoney,
+			distance = 3.0,
+		})
+	end
+end
+
+local function createBombPlantingTarget()
+	exports.ox_target:addLocalEntity(truck, {
+		name = 'transportPlant',
+		label = Lang:t('info.plant_bomb'),
+		icon = 'fas fa-bomb',
+		canInteract = function()
+			return QBX.PlayerData.job.type ~= 'leo'
+		end,
+		onSelect = plantBomb,
+		distance = 3.0,
+	})
+end
+
+RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function()
 	Wait(2000)
 	config.emailNotification()
 	Wait(3000)
-end
-
-RegisterNetEvent('truckrobbery:StartMission', function()
-	MissionNotification()
 	ClearPedTasks(dealer)
 	TaskWanderStandard(dealer, 10.0, 10)
-	local drawCoord = math.random(1, #config.truckSpawns)
-	vehicleCoords = config.truckSpawns[drawCoord]
+	local vehicleSpawnCoords = config.truckSpawns[math.random(1, #config.truckSpawns)]
 
-	lib.requestModel(joaat(config.truckModel))
+	lib.requestModel(config.truckModel)
 
-	ClearAreaOfVehicles(vehicleCoords.x, vehicleCoords.y, vehicleCoords.z, 15.0, false, false, false, false, false)
-	transport = CreateVehicle(joaat(config.truckModel), vehicleCoords.x, vehicleCoords.y, vehicleCoords.z, vehicleCoords.w, true, true)
-	SetEntityAsMissionEntity(transport)
-	truckBlip = AddBlipForEntity(transport)
+	ClearAreaOfVehicles(vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 15.0, false, false, false, false, false)
+	truck = CreateVehicle(config.truckModel, vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, vehicleSpawnCoords.w, true, true)
+	SetEntityAsMissionEntity(truck)
+	truckBlip = AddBlipForEntity(truck)
 	SetBlipSprite(truckBlip, 67)
 	SetBlipColour(truckBlip, 1)
 	SetBlipFlashes(truckBlip, true)
@@ -136,10 +227,22 @@ RegisterNetEvent('truckrobbery:StartMission', function()
 
 	lib.requestModel(config.guardModel)
 
-	pilot = CreatePed(26, config.guardModel, vehicleCoords.x, vehicleCoords.y, vehicleCoords.z, 268.9422, true, false)
-	navigator = CreatePed(26, config.guardModel, vehicleCoords.x, vehicleCoords.y, vehicleCoords.z, 268.9422, true, false)
-	SetPedIntoVehicle(pilot, transport, -1)
-	SetPedIntoVehicle(navigator, transport, 0)
+	pilot = CreatePed(26, config.guardModel, vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 268.9422, true, false)
+	navigator = CreatePed(26, config.guardModel, vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 268.9422, true, false)
+
+	CreateThread(function()
+		while true do
+			if IsPedDeadOrDying(pilot) and IsPedDeadOrDying(navigator) then
+				guardsDead = true
+				callCops()
+				return
+			end
+			Wait(1000)
+		end
+	end)
+
+	SetPedIntoVehicle(pilot, truck, -1)
+	SetPedIntoVehicle(navigator, truck, 0)
 	SetPedFleeAttributes(pilot, 0, false)
 	SetPedCombatAttributes(pilot, 46, true)
 	SetPedCombatAbility(pilot, 100)
@@ -155,258 +258,12 @@ RegisterNetEvent('truckrobbery:StartMission', function()
 	SetPedCombatMovement(navigator, 2)
 	SetPedCombatRange(navigator, 2)
 	SetPedKeepTask(navigator, true)
-	TaskEnterVehicle(navigator,transport, -1, 0, 1.0, 1)
+	TaskEnterVehicle(navigator,truck, -1, 0, 1.0, 1)
 	GiveWeaponToPed(navigator, config.passengerWeapon, 250, false, true)
 	SetPedAsCop(navigator, true)
 
-	TaskVehicleDriveWander(pilot, transport, 80.0, 536871867)
-	TaskVehicleDriveWander(navigator, transport, 80.0, 536871867)
-	missionStart = 1
+	TaskVehicleDriveWander(pilot, truck, 80.0, 536871867)
+	TaskVehicleDriveWander(navigator, truck, 80.0, 536871867)
+	missionStarted = true
+	createBombPlantingTarget()
 end)
-
-CreateThread(function()
-    while true do
-        Wait(5)
-		if missionStart == 1 then
-			local plyCoords = GetEntityCoords(cache.ped, false)
-			local transCoords = GetEntityCoords(transport)
-			local dist = #(plyCoords - transCoords)
-
-			if dist <= 75.0 and QBX.PlayerData.job.type == 'leo' then
-				DrawMarker(0, transCoords.x, transCoords.y, transCoords.z+4.5, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, 135, 31, 35, 100, 1, 0, 0, 0)
-				if warning == 0 then
-					warning = 1
-					exports.qbx_core:Notify(Lang:t('info.before_bomb'), 'error')
-				end
-
-				if guardsDead == 0 then
-					CheckGuards()
-				elseif guardsDead == 1 and blownUp == 0 then
-					TriggerEvent('truckrobbery:client:911alert')
-				end
-			else
-				Wait(500)
-			end
-
-			if dist <= 7 and blownUp == 0  then
-				if QBX.PlayerData.job.type == 'leo' then
-
-					if guardsDead == 1 and blownUp == 0 then
-						if config.useTarget then
-							if bowBackdoor == 0 and guardsDead == 1 then
-								exports.qbx_core:Notify(Lang:t('info.detonate_bomb_target'), 'inform')
-								bowBackdoor = 1
-							end
-							exports.ox_target:addLocalEntity(transport, {
-								name = 'transportPlant',
-								label = Lang:t('info.plant_bomb'),
-								icon = 'fas fa-bomb',
-								canInteract = function()
-									if QBX.PlayerData.job.type == 'leo' then return false end
-									return true
-								end,
-								onSelect = function()
-									if QBX.PlayerData.job.type == 'leo' then return false end
-									CheckVehicleInformation()
-									return true
-								end,
-								distance = 3.0,
-							})
-							Wait(500)
-						else
-							if bowBackdoor == 0 then
-								exports.qbx_core:Notify(Lang:t('info.detonate_bomb'), 'inform')
-								bowBackdoor = 1
-							end
-							if IsControlPressed(0, 47) and guardsDead == 1 then
-								CheckVehicleInformation()
-								Wait(500)
-							end
-						end
-					end
-				end
-			end
-		else
-			Wait(1500)
-		end
-	end
-end)
-
-function CheckVehicleInformation()
-	if IsVehicleStopped(transport) then
-		if guardsDead == 1 then
-			if not IsEntityInWater(cache.ped) then
-				if config.useTarget then
-					exports.ox_target:removeLocalEntity(transport, 'transportPlant')
-				end
-				blownUp = 1
-				SetCurrentPedWeapon(cache.ped, `WEAPON_UNARMED`,true)
-				Wait(500)
-
-				if lib.progressBar({
-                    duration = 5000,
-                    label = Lang:t('info.planting_bomb'),
-                    useWhileDead = false,
-                    canCancel = true,
-                    disable = {
-                        move = true,
-                        car = true,
-                        combat = true,
-                        mouse = false,
-                    },
-                    anim = {
-                        dict = 'anim@heists@ornate_bank@thermal_charge_heels',
-                        clip = 'thermal_charge',
-                        flag = 16,
-                    },
-                    prop = {
-                        model = `prop_c4_final_green`,
-                        pos = {
-                            x = 0.06,
-                            y = 0.0,
-                            z = 0.06,
-                        },
-                        rot = {
-                            x = 90.0,
-                            y = 0.0,
-                            z = 0.0,
-                        },
-                    }
-                }) then
-                    local coords = GetEntityCoords(cache.ped)
-                    local prop = CreateObject(`prop_c4_final_green`, coords.x, coords.y, coords.z + 0.2,  true,  true, true)
-					AttachEntityToEntity(prop, transport, GetEntityBoneIndexByName(transport, 'door_pside_r'), -0.7, 0.0, 0.0, 0.0, 0.0, 0.0, true, true, false, true, 1, true)
-					exports.qbx_core:Notify(Lang:t('info.bomb_timer', {TimeToBlow = config.timetoDetonation / 1000}), 'error')
-					Wait(config.timetoDetonation)
-					local transCoords = GetEntityCoords(transport)
-					SetVehicleDoorBroken(transport, 2, false)
-					SetVehicleDoorBroken(transport, 3, false)
-					AddExplosion(transCoords.x,transCoords.y,transCoords.z, 'EXPLOSION_TANKER', 2.0, true, false, 2.0)
-					ApplyForceToEntity(transport, 0, 20.0, 500.0, 0.0, 0.0, 0.0, 0.0, 1, false, true, true, false, true)
-					lootable = 1
-					exports.qbx_core:Notify(Lang:t('info.collect'), 'success')
-				else
-					blownUp = 0
-				end
-			else
-				exports.qbx_core:Notify(Lang:t('info.get_out_water'), 'error')
-			end
-		else
-			exports.qbx_core:Notify(Lang:t('error.guards_dead'), 'error')
-		end
-	else
-		exports.qbx_core:Notify(Lang:t('error.truck_ismoving'), 'error')
-	end
-end
-
-CreateThread(function()
-    while true do
-        Wait(5)
-
-		if lootable == 1 then
-			local plyCoords = GetEntityCoords(cache.ped, false)
-			local transCoords = GetEntityCoords(transport)
-            local dist = #(plyCoords - transCoords)
-
-            if dist > 45.0 then
-                Wait(500)
-            end
-
-			if config.useTarget then
-				exports.ox_target:addLocalEntity(transport, {
-					name = 'transportTake',
-					label = Lang:t('info.take_money_target'),
-					icon = 'fas fa-sack-dollar',
-					canInteract = function()
-						if QBX.PlayerData.job.type == 'leo' or not lootable then return false end
-						return true
-					end,
-					onSelect = function()
-						if QBX.PlayerData.job.type == 'leo' then return false end
-						if lootable then
-							TakingMoney()
-						end
-					end,
-					distance = 3.0,
-				})
-			else
-				if dist <= 4.5 then
-					if pickupMoney == 0 then
-						exports.qbx_core:Notify(Lang:t('info.take_money'), 'inform', 7500)
-						pickupMoney = 1
-					end
-						if IsControlJustPressed(0, 38) and lootable then
-						TakingMoney()
-						Wait(500)
-					end
-				end
-			end
-		else
-			Wait(1500)
-		end
-	end
-end)
-
-RegisterNetEvent('truckrobbery:CleanUp', function()
-    pickupMoney = 0
-    bowBackdoor = 0
-    policeAlert = 0
-    lootTime = 1
-    guardsDead = 0
-    lootable = 0
-    blownUp = 0
-    missionStart = 0
-    warning = 0
-    RemoveBlip(truckBlip)
-	SetBlipRoute(truckBlip, false)
-end)
-
-function TakingMoney()
-	if lootable == 1 then
-		lootable = 0
-		if config.useTarget then
-			exports.ox_target:removeLocalEntity(transport, 'transportTake')
-		end
-		exports.qbx_core:Notify(Lang:t('success.packing_cash'), 'success')
-		local _time = GetGameTimer()
-
-        if lib.progressBar({
-            duration = 5000,
-            label = Lang:t('info.grabing_money'),
-            useWhileDead = false,
-            canCancel = true,
-            disable = {
-                move = true,
-                car = true,
-                combat = true,
-                mouse = false,
-            },
-            anim = {
-                dict = 'anim@heists@ornate_bank@grab_cash_heels',
-                clip = 'grab',
-                flag = 1,
-            },
-            prop = {
-                model = `prop_cs_heist_bag_02`,
-                bone = 57005,
-                pos = {
-                    x = 0.0,
-                    y = 0.0,
-                    z = -0.16,
-                },
-                rot = {
-                    x = 250.0,
-                    y = -30.0,
-                    z = 0.0,
-                },
-            }
-        }) then
-			lootTime = GetGameTimer() - _time
-			SetPedComponentVariation(cache.ped, 5, 45, 0, 2)
-			TriggerServerEvent('truckrobbery:RobberySucess', lootTime)
-			TriggerEvent('truckrobbery:CleanUp')
-        else
-			lootable = 1
-		end
-	end
-end
