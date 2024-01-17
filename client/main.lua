@@ -2,16 +2,20 @@ local config = require 'config.client'
 local guardsDead = false
 local truckBlip
 local truck
+local netId
+local area
 local missionStarted = false
 local dealer, pilot, navigator
 
 AddEventHandler('onResourceStart', function(resource)
-	if resource ~= GetCurrentResourceName() then return end
-	lib.requestModel(config.dealerModel)
-	dealer = CreatePed(26, config.dealerModel, config.dealerCoords.x, config.dealerCoords.y, config.dealerCoords.z, 268.9422, false, false)
-	SetEntityHeading(dealer, 1.8)
-	SetBlockingOfNonTemporaryEvents(dealer, true)
+	if resource ~= cache.resource then return end
+	lib.requestModel(config.dealerModel, 5000)
+	dealer = CreatePed(26, config.dealerModel, config.dealerCoords.x, config.dealerCoords.y, config.dealerCoords.z, config.dealerCoords.w, false, false)
 	TaskStartScenarioInPlace(dealer, 'WORLD_HUMAN_AA_SMOKE', 0, false)
+	SetEntityInvincible(dealer, true)
+	SetBlockingOfNonTemporaryEvents(dealer, true)
+	Wait(1000)
+	FreezeEntityPosition(dealer, true)
 
 	exports.ox_target:addLocalEntity(dealer, {
 		name = 'dealer',
@@ -28,7 +32,7 @@ AddEventHandler('onResourceStart', function(resource)
 end)
 
 AddEventHandler('onResourceStop', function(resource)
-	if resource ~= GetCurrentResourceName() then return end
+	if resource ~= cache.resource then return end
 	exports.ox_target:removeLocalEntity(dealer)
 	DeletePed(dealer)
 end)
@@ -38,38 +42,11 @@ local function callCops()
 	PlaySoundFrontend(-1, 'Mission_Pass_Notify', 'DLC_HEISTS_GENERAL_FRONTEND_SOUNDS', false)
 end
 
-lib.callback.register('qbx_truckrobbery:client:notifyCop', function(msg, coords)
-    PlaySound(-1, 'Lose_1st', 'GTAO_FM_Events_Soundset', false, 0, true)
-    exports.qbx_core:Notify(msg, 'police', 10000)
-
-    local transG = 250
-    local blip = AddBlipForCoord(coords.x, coords.y, coords.z)
-    SetBlipSprite(blip, 487)
-    SetBlipColour(blip, 4)
-    SetBlipDisplay(blip, 4)
-    SetBlipAlpha(blip, transG)
-    SetBlipScale(blip, 1.2)
-    SetBlipFlashes(blip, true)
-    BeginTextCommandSetBlipName('STRING')
-    AddTextComponentString(Lang:t('info.cop_blip'))
-    EndTextCommandSetBlipName(blip)
-    while transG ~= 0 do
-        Wait(180 * 4)
-        transG = transG - 1
-        SetBlipAlpha(blip, transG)
-        if transG == 0 then
-            SetBlipSprite(blip, 2)
-            RemoveBlip(blip)
-            return
-        end
-    end
-end)
-
 local function resetMission()
     guardsDead = false
     missionStarted = false
     RemoveBlip(truckBlip)
-	SetBlipRoute(truckBlip, false)
+    RemoveBlip(area)
 end
 
 lib.callback.register('qbx_truckrobbery:resetMission', resetMission)
@@ -79,7 +56,7 @@ local function grabMoney()
 
 	if lib.progressBar({
 		duration = 5000,
-		label = Lang:t('info.grabing_money'),
+		label = Lang:t('info.grabbing_money'),
 		useWhileDead = false,
 		canCancel = true,
 		disable = {
@@ -108,7 +85,7 @@ local function grabMoney()
 			},
 		}
 	}) then
-		exports.ox_target:removeLocalEntity(truck, 'transportTake')
+		exports.ox_target:removeEntity(netId, 'transportTake')
 		SetPedComponentVariation(cache.ped, 5, 45, 0, 2)
 		lib.callback('qbx_truckrobbery:server:giveReward')
 		resetMission()
@@ -128,8 +105,13 @@ local function plantBomb()
 		exports.qbx_core:Notify(Lang:t('info.get_out_water'), 'error')
 		return
 	end
-	exports.ox_target:removeLocalEntity(truck, 'transportPlant')
-	SetCurrentPedWeapon(cache.ped, `WEAPON_UNARMED`,true)
+	local hasBomb = exports.ox_inventory:Search('count', 'WEAPON_STICKYBOMB') > 0
+	if not hasBomb then
+		exports.qbx_core:Notify(Lang:t('error.missing_bomb'), 'error')
+		return
+	end
+	exports.ox_target:removeEntity(netId, 'transportPlant')
+	SetCurrentPedWeapon(cache.ped, `WEAPON_UNARMED`, true)
 	Wait(500)
 
 	if lib.progressBar({
@@ -162,11 +144,13 @@ local function plantBomb()
 			},
 		}
 	}) then
-		exports.ox_target:removeLocalEntity(truck, 'transportPlant')
+		local removeBomb = lib.callback.await('qbx_truckrobbery:server:plantedBomb', false)
+		if not removeBomb then return end
+		exports.ox_target:removeEntity(netId, 'transportPlant')
 		local coords = GetEntityCoords(cache.ped)
 		local prop = CreateObject(`prop_c4_final_green`, coords.x, coords.y, coords.z + 0.2,  true,  true, true)
 		AttachEntityToEntity(prop, truck, GetEntityBoneIndexByName(truck, 'door_pside_r'), -0.7, 0.0, 0.0, 0.0, 0.0, 0.0, true, true, false, true, 1, true)
-		exports.qbx_core:Notify(Lang:t('info.bomb_timer', {TimeToBlow = config.timetoDetonation / 1000}), 'error')
+		exports.qbx_core:Notify(Lang:t('info.bomb_timer', {TimeToBlow = config.timetoDetonation / 1000}), 'inform')
 		Wait(config.timetoDetonation)
 		local transCoords = GetEntityCoords(truck)
 		SetVehicleDoorBroken(truck, 2, false)
@@ -175,8 +159,8 @@ local function plantBomb()
 		ApplyForceToEntity(truck, 0, 20.0, 500.0, 0.0, 0.0, 0.0, 0.0, 1, false, true, true, false, true)
 
 		exports.qbx_core:Notify(Lang:t('info.collect'), 'success')
-		--- TODO: seems like these targets should be added for all players instead of just the bomb planter
-		exports.ox_target:addLocalEntity(truck, {
+
+		exports.ox_target:addEntity(netId, {
 			name = 'transportTake',
 			label = Lang:t('info.take_money_target'),
 			icon = 'fas fa-sack-dollar',
@@ -190,7 +174,7 @@ local function plantBomb()
 end
 
 local function createBombPlantingTarget()
-	exports.ox_target:addLocalEntity(truck, {
+	exports.ox_target:addEntity(netId, {
 		name = 'transportPlant',
 		label = Lang:t('info.plant_bomb'),
 		icon = 'fas fa-bomb',
@@ -206,26 +190,34 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function()
 	Wait(2000)
 	config.emailNotification()
 	Wait(3000)
-	ClearPedTasks(dealer)
-	TaskWanderStandard(dealer, 10.0, 10)
 	local vehicleSpawnCoords = config.truckSpawns[math.random(1, #config.truckSpawns)]
 
 	lib.requestModel(config.truckModel)
 
+	area = AddBlipForRadius(vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 450.0)
+	SetBlipHighDetail(area, true)
+	SetBlipAlpha(area, 90)
+	SetBlipColour(area, config.routeColor)
+
 	ClearAreaOfVehicles(vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 15.0, false, false, false, false, false)
-	truck = CreateVehicle(config.truckModel, vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, vehicleSpawnCoords.w, true, true)
-	SetEntityAsMissionEntity(truck)
+	netId = lib.callback.await('qbx_truckrobbery:server:spawnVehicle', false, config.truckModel, vehicleSpawnCoords)
+	lib.waitFor(function()
+        if NetworkDoesEntityExistWithNetworkId(netId) then
+			truck = NetToVeh(netId)
+            return truck
+        end
+    end, 'It looks like there\'s been a problem...')
+
+	exports.qbx_core:Notify('The truck has been spotted! Get to it before anyone else does!', 'inform')
+
 	truckBlip = AddBlipForEntity(truck)
 	SetBlipSprite(truckBlip, 67)
 	SetBlipColour(truckBlip, 1)
 	SetBlipFlashes(truckBlip, true)
-	SetBlipRoute(truckBlip,  true)
-	SetBlipRouteColour(truckBlip, config.routeColor)
 	BeginTextCommandSetBlipName('STRING')
 	AddTextComponentString(Lang:t('mission.stockade'))
 	EndTextCommandSetBlipName(truckBlip)
-
-	lib.requestModel(config.guardModel)
+	lib.requestModel(config.guardModel, 5000)
 
 	pilot = CreatePed(26, config.guardModel, vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 268.9422, true, false)
 	navigator = CreatePed(26, config.guardModel, vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 268.9422, true, false)
@@ -249,7 +241,7 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function()
 	SetPedCombatMovement(pilot, 2)
 	SetPedCombatRange(pilot, 2)
 	SetPedKeepTask(pilot, true)
-	GiveWeaponToPed(pilot, config.driverWeapon,250,false,true)
+	GiveWeaponToPed(pilot, config.driverWeapon, 250, false, true)
 	SetPedAsCop(pilot, true)
 
 	SetPedFleeAttributes(navigator, 0, false)

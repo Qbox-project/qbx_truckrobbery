@@ -26,10 +26,15 @@ lib.callback.register('qbx_truckrobbery:server:startMission', function(source)
 	lib.callback('qbx_truckrobbery:client:resetMission', -1)
 end)
 
+lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(_, model, coords)
+	local netId = qbx.spawnVehicle({spawnSource = coords, model = model})
+	return netId
+end)
+
 lib.callback.register('qbx_truckrobbery:server:callCops', function(_, coords)
 	local msg = Lang:t("info.alert_desc")
     local alertData = {
-        title = Lang:t("info.alerttitle"),
+        title = Lang:t('info.alerttitle'),
         coords = {
             x = coords.x,
             y = coords.y,
@@ -40,20 +45,20 @@ lib.callback.register('qbx_truckrobbery:server:callCops', function(_, coords)
 	local numCops, copSrcs = exports.qbx_core:GetDutyCountType('leo')
 	for i = 1, numCops do
 		local copSrc = copSrcs[i]
-		lib.callback('qbx_truckrobbery:client:notifyCop', copSrc, nil, msg, coords)
-		TriggerClientEvent("qb-phone:client:addPoliceAlert", copSrc, alertData)
+		TriggerClientEvent('police:client:policeAlert', copSrc, coords, msg)
+		TriggerClientEvent('qb-phone:client:addPoliceAlert', copSrc, alertData)
 	end
 end)
 
+lib.callback.register('qbx_truckrobbery:server:plantedBomb', function(source)
+	return exports.ox_inventory:RemoveItem(source, 'weapon_stickybomb', 1)
+end)
+
 lib.callback.register('qbx_truckrobbery:server:giveReward', function(source)
-	local player = exports.qbx_core:GetPlayer(source)
-	local bags = math.random(1,3)
-	local info = {
-		worth = math.random(config.minReward, config.maxReward)
-	}
-	player.Functions.AddItem('markedbills', bags, false, info)
-	exports.qbx_core:Notify(source, Lang:t('success.took_bags', {bags = bags}), 'success')
+	local reward = math.random(config.minReward, config.maxReward)
+	exports.ox_inventory:AddItem(source, 'black_money', reward)
+	exports.qbx_core:Notify(source, Lang:t('success.took_bags', {bags = reward}), 'success')
 	if math.random() <= 0.05 then
-		player.Functions.AddItem('security_card_01', 1)
+		exports.ox_inventory:AddItem(source, 'security_card_01', 1)
 	end
 end)
