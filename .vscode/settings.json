@@ -3,6 +3,7 @@
         "QBX",
         "DrawText3D",
         "lib",
-        "cache"
+        "cache",
+        "qbx"
     ]
 }

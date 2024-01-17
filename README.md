@@ -1,2 +1,2 @@
-# qb-truckrobbery
-Armored Truck Robbery For QB-Core
+# qbx_truckrobbery
+Armored Truck Robbery For QBox

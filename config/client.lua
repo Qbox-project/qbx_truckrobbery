@@ -1,6 +1,6 @@
 return {
     missionMarker = vec3(960.71197509766, -215.51979064941, 76.2552947998), -- Marker to start mission
-    dealerCoords = vec3(960.78, -216.25, 76.25), -- place where the NPC stands
+    dealerCoords = vec4(960.78, -216.25, 76.25, 1.8), -- place where the NPC stands
 
     truckSpawns = { -- Possible truck spawn locations
         vec4(-1215.97, -355.4, 36.9, 208.6),
@@ -23,7 +23,7 @@ return {
 
     -- Used for mission notification
     emailNotification = function()
-        TriggerServerEvent('npwd_qbx_phone:server:sendNewMail', {
+        TriggerServerEvent('qb-phone:server:sendNewMail', {
             sender = Lang:t('mission.sender'),
             subject = Lang:t('mission.subject'),
             message = Lang:t('mission.message'),
