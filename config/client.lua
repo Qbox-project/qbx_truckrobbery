@@ -24,9 +24,9 @@ return {
     -- Used for mission notification
     emailNotification = function()
         TriggerServerEvent('qb-phone:server:sendNewMail', {
-            sender = Lang:t('mission.sender'),
-            subject = Lang:t('mission.subject'),
-            message = Lang:t('mission.message'),
+            sender = locale('mission.sender'),
+            subject = locale('mission.subject'),
+            message = locale('mission.message'),
         })
     end,
 }

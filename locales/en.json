@@ -1,0 +1,31 @@
+{
+    "error": {
+        "activation_cost": "You need $%s in order to accept this mission...",
+        "get_out_water": "You must get out of the water before planting the bomb...",
+        "guards_dead": "All the guards must be dead in order to place the bomb...",
+        "truck_moving": "You can't rob a vehicle while it's moving...",
+        "missing_bomb": "It appears you don't have a bomb...",
+        "active_police": "You need at least %s police in order to activate this mission...",
+        "already_active": "Someone is already carrying out a mission...",
+        "no_truck_spawned": "It looks like there is an issue spawning the armored truck..."
+    },
+    "success": {
+        "looted": "You've successfully looted the truck"
+    },
+    "mission": {
+        "ask_for_mission": "Ask for a mission",
+        "sender": "The Boss",
+        "subject": "New Target",
+        "message": "So you are intrested in making some money huh? Good. Sending you the location now. You better hurry before someone else hits this truck first!"
+    },
+    "info": {
+        "plant_bomb": "Plant the bomb",
+        "planting_bomb": "Planting the bomb...",
+        "bomb_timer": "Timer set to %s seconds! Stand clear!",
+        "loot_truck": "Loot the truck",
+        "looting_truck": "Looting the truck...",
+        "alert_title": "Armored Truck Robbery Attempt",
+        "alert_desc": "An Armored Truck is being robbed!",
+        "truck_spotted": "The truck has been spotted! Get to it before anyone else does!"
+    }
+}

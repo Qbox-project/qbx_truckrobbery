@@ -1,20 +1,22 @@
 local config = require 'config.server'
 local isMissionAvailable = true
 
+lib.locale()
+
 lib.callback.register('qbx_truckrobbery:server:startMission', function(source)
 	local player = exports.qbx_core:GetPlayer(source)
 	if not isMissionAvailable then
-		exports.qbx_core:Notify(source, Lang:t('error.already_active'), 'error')
+		exports.qbx_core:Notify(source, locale('error.already_active'), 'error')
 		return
 	end
 	if player.PlayerData.money.bank < config.activationCost then
-		exports.qbx_core:Notify(source, Lang:t('mission.activation_cost', {cost = config.activationCost}), 'inform')
+		exports.qbx_core:Notify(source, locale('error.activation_cost', config.activationCost), 'error')
 		return
 	end
 
 	local numCops = exports.qbx_core:GetDutyCountType('leo')
 	if numCops < config.numRequiredPolice then
-		exports.qbx_core:Notify(source, Lang:t('error.active_police', {police = config.numRequiredPolice}), 'error')
+		exports.qbx_core:Notify(source, locale('error.active_police', config.numRequiredPolice), 'error')
 		return
 	end
 
@@ -32,9 +34,9 @@ lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(_, model,
 end)
 
 lib.callback.register('qbx_truckrobbery:server:callCops', function(_, coords)
-	local msg = Lang:t("info.alert_desc")
+	local msg = locale("info.alert_desc")
     local alertData = {
-        title = Lang:t('info.alerttitle'),
+        title = locale('info.alert_title'),
         coords = {
             x = coords.x,
             y = coords.y,
@@ -51,13 +53,13 @@ lib.callback.register('qbx_truckrobbery:server:callCops', function(_, coords)
 end)
 
 lib.callback.register('qbx_truckrobbery:server:plantedBomb', function(source)
-	return exports.ox_inventory:RemoveItem(source, 'weapon_stickybomb', 1)
+	return exports.ox_inventory:RemoveItem(source, 'WEAPON_STICKYBOMB', 1)
 end)
 
 lib.callback.register('qbx_truckrobbery:server:giveReward', function(source)
 	local reward = math.random(config.minReward, config.maxReward)
 	exports.ox_inventory:AddItem(source, 'black_money', reward)
-	exports.qbx_core:Notify(source, Lang:t('success.took_bags', {bags = reward}), 'success')
+	exports.qbx_core:Notify(source, locale('success.looted'), 'success')
 	if math.random() <= 0.05 then
 		exports.ox_inventory:AddItem(source, 'security_card_01', 1)
 	end
