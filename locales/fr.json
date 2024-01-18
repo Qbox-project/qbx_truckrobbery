@@ -1,0 +1,31 @@
+{
+    "error": {
+        "activation_cost": "Vous avez besoin de $ %{cost} en banque pour accepter la mission...",
+        "get_out_water": "Sortez de l'eau...",
+        "guards_dead": "Les gardes doivent être morts pour placer la bombe...",
+        "truck_moving": "Vous ne pouvez pas braquer un camion en mouvement...",
+        "missing_bomb": "It appears you don't have a bomb...",
+        "active_police": "Il faut au moins %s policiers pour activer la mission...",
+        "already_active": "Quelqu'un est déjà en train de faire cette mission...",
+        "no_truck_spawned": "It looks like there is an issue spawning the armored truck..."
+    },
+    "success": {
+        "looted": "Vous avez pris sacs de cash du camion"
+    },
+    "mission": {
+        "ask_for_mission": "Accepter la mission",
+        "sender": "Le Boss",
+        "subject": "Nouvelle cible",
+        "message": "Alors vous-voulez vous faire de l'argent? bon... allez trouvez une arme et faites le boulot.. Je vous envoie la localisation."
+    },
+    "info": {
+        "plant_bomb": "Poser la bombe",
+        "planting_bomb": "Pose la bombe...",
+        "bomb_timer": "La bombe explosera dans %s Secondes",
+        "loot_truck": "Loot the Truck",
+        "looting_truck": "Looting the Truck...",
+        "alert_title": "Braquage de Transport de Fonds",
+        "alert_desc": "Un Transport de Fonds se fait braquer!",
+        "truck_spotted": "The truck has been spotted! Get to it before anyone else does!"
+    }
+}
