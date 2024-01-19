@@ -149,9 +149,10 @@ local function plantBomb()
 		exports.ox_target:removeEntity(netId, 'transportPlant')
 		local coords = GetEntityCoords(cache.ped)
 		local prop = CreateObject(`prop_c4_final_green`, coords.x, coords.y, coords.z + 0.2,  true,  true, true)
+		local detTime = config.timeToDetonation * 1000 / 60
 		AttachEntityToEntity(prop, truck, GetEntityBoneIndexByName(truck, 'door_pside_r'), -0.7, 0.0, 0.0, 0.0, 0.0, 0.0, true, true, false, true, 1, true)
-		exports.qbx_core:Notify(locale('info.bomb_timer', config.timetoDetonation / 1000), 'inform')
-		Wait(config.timetoDetonation)
+		exports.qbx_core:Notify(locale('info.bomb_timer', detTime), 'inform')
+		Wait(detTime)
 		local transCoords = GetEntityCoords(truck)
 		SetVehicleDoorBroken(truck, 2, false)
 		SetVehicleDoorBroken(truck, 3, false)
@@ -222,7 +223,7 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function()
 
 	CreateThread(function()
 		while true do
-			if IsPedDeadOrDying(pilot) and IsPedDeadOrDying(navigator) then
+			if IsPedDeadOrDying(pilot) or IsPedDeadOrDying(navigator) then
 				guardsDead = true
 				alertPolice()
 				return
