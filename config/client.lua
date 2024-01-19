@@ -1,5 +1,4 @@
 return {
-    missionMarker = vec3(960.71197509766, -215.51979064941, 76.2552947998), -- Marker to start mission
     dealerCoords = vec4(960.78, -216.25, 76.25, 1.8), -- place where the NPC stands
 
     truckSpawns = { -- Possible truck spawn locations
@@ -19,7 +18,7 @@ return {
     dealerModel = `s_m_y_dealer_01`, -- Model of the NPC that gives the mission
     guardModel = `s_m_m_security_01`, -- Model of the guard
 
-    timetoDetonation = 30 * 1000, -- Time to detonate the bomb, default 30 seconds
+    timeToDetonation = 30, -- Time in seconds till bomb detonation after placement
 
     -- Used for mission notification
     emailNotification = function()
