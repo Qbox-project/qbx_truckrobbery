@@ -1,6 +1,8 @@
 local config = require 'config.server'
 local isMissionAvailable = true
 
+lib.locale()
+
 lib.callback.register('qbx_truckrobbery:server:startMission', function(source)
 	local player = exports.qbx_core:GetPlayer(source)
 	if not isMissionAvailable then
