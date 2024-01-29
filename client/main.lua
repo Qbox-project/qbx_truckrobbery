@@ -7,8 +7,6 @@ local area
 local missionStarted = false
 local dealer, pilot, navigator
 
-lib.locale()
-
 AddEventHandler('onResourceStart', function(resource)
 	if resource ~= cache.resource then return end
 	lib.requestModel(config.dealerModel, 5000)
