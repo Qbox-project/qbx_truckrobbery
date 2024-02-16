@@ -1,9 +1,11 @@
 {
+    "Lua.runtime.nonstandardSymbol": ["/**/", "`", "+=", "-=", "*=", "/="],
+    "Lua.runtime.version": "Lua 5.4",
     "Lua.diagnostics.globals": [
-        "QBX",
-        "DrawText3D",
         "lib",
         "cache",
+        "QBX",
+        "locale",
         "qbx"
     ]
 }
