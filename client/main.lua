@@ -1,4 +1,5 @@
 local config = require 'config.client'
+local sharedConfig = require 'config.shared'
 local guardsDead = false
 local truckBlip
 local truck
@@ -103,7 +104,7 @@ local function plantBomb()
 		exports.qbx_core:Notify(locale('error.get_out_water'), 'error')
 		return
 	end
-	local hasBomb = exports.ox_inventory:Search('count', 'WEAPON_STICKYBOMB') > 0
+	local hasBomb = exports.ox_inventory:Search('count', sharedConfig.bombItem) > 0
 	if not hasBomb then
 		exports.qbx_core:Notify(locale('error.missing_bomb'), 'error')
 		return

@@ -1,4 +1,5 @@
 local config = require 'config.server'
+local sharedConfig = require 'config.shared'
 local isMissionAvailable = true
 
 lib.callback.register('qbx_truckrobbery:server:startMission', function(source)
@@ -51,7 +52,7 @@ lib.callback.register('qbx_truckrobbery:server:callCops', function(_, coords)
 end)
 
 lib.callback.register('qbx_truckrobbery:server:plantedBomb', function(source)
-	return exports.ox_inventory:RemoveItem(source, 'WEAPON_STICKYBOMB', 1)
+	return exports.ox_inventory:RemoveItem(source, sharedConfig.bombItem, 1)
 end)
 
 lib.callback.register('qbx_truckrobbery:server:giveReward', function(source)
