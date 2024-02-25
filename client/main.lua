@@ -9,7 +9,7 @@ local missionStarted = false
 local dealer, pilot, navigator
 
 AddEventHandler('onResourceStart', function(resource)
-	if resource ~= cache.resource then return end
+	if resource ~= 'qbx_truckrobbery' then return end
 	lib.requestModel(config.dealerModel, 5000)
 	dealer = CreatePed(26, config.dealerModel, config.dealerCoords.x, config.dealerCoords.y, config.dealerCoords.z, config.dealerCoords.w, false, false)
 	TaskStartScenarioInPlace(dealer, 'WORLD_HUMAN_AA_SMOKE', 0, false)
