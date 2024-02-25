@@ -29,7 +29,7 @@ end)
 
 lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(_, model, coords)
 	local netId = qbx.spawnVehicle({spawnSource = coords, model = model})
-		return netId
+	return netId
 end)
 
 lib.callback.register('qbx_truckrobbery:server:callCops', function(_, coords)
