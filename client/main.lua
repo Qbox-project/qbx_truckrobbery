@@ -2,7 +2,7 @@ local config = require 'config.client'
 local sharedConfig = require 'config.shared'
 local guardsDead = false
 local truckBlip
-local truck
+local truckBlipuck
 local netId
 local area
 local missionStarted = false
@@ -203,7 +203,10 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function()
 	ClearAreaOfVehicles(vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 15.0, false, false, false, false, false)
 	netId = lib.callback.await('qbx_truckrobbery:server:spawnVehicle', false, config.truckModel, vehicleSpawnCoords)
 	lib.waitFor(function()
-        return NetworkDoesEntityExistWithNetworkId(netId)
+        if NetworkDoesEntityExistWithNetworkId(netId) then
+			truck = NetToVeh(netId)
+            return truck
+        end
     end, locale('no_truck_spawned'))
 
 	exports.qbx_core:Notify(locale('info.truck_spotted'), 'inform')
