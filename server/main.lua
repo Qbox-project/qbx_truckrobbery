@@ -58,10 +58,12 @@ lib.callback.register('qbx_truckrobbery:server:plantedBomb', function(source)
 end)
 
 lib.callback.register('qbx_truckrobbery:server:giveReward', function(source)
-	local reward = math.random(config.minReward, config.maxReward)
-	exports.ox_inventory:AddItem(source, 'black_money', reward)
+    for i = 1, #config.rewards do
+        local reward = config.rewards[i]
+        if not reward.probability or math.random() <= reward.probability then
+            local amount = math.random(reward.minAmount or 1, reward.maxAmount or 1)
+            exports.ox_inventory:AddItem(source, reward.item, amount)
+        end
+    end
 	exports.qbx_core:Notify(source, locale('success.looted'), 'success')
-	if math.random() <= 0.05 then
-		exports.ox_inventory:AddItem(source, 'security_card_01', 1)
-	end
 end)

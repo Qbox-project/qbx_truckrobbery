@@ -3,6 +3,22 @@ return {
     activationCost = 500, -- How much is the activation of the mission (clean from the bank)
     missionCooldown = 2700 * 1000, -- Timer every how many missions you can do, default is 600 seconds
 
-    minReward = 250, -- How much minimum you can get from a robbery
-    maxReward = 450, -- How much maximum you can get from a robbery
+    ---@class Reward
+    ---@field item string
+    ---@field minAmount? integer default 1
+    ---@field maxAmount? integer default 1
+    ---@field probability? number 0.0 to 1.0, the independent probability of the reward being present. Defaults to 1.0
+
+    ---@type Reward[]
+    rewards = {
+        {
+            item = 'black_money',
+            minAmount = 250,
+            maxAmount = 450,
+        },
+        {
+            item = 'security_card_01',
+            probability = 0.05
+        }
+    },
 }
