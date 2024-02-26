@@ -157,8 +157,9 @@ local function plantBomb()
 		SetVehicleDoorBroken(truck, 3, false)
 		AddExplosion(transCoords.x,transCoords.y,transCoords.z, 'EXPLOSION_TANKER', 2.0, true, false, 2.0)
 		ApplyForceToEntity(truck, 0, 20.0, 500.0, 0.0, 0.0, 0.0, 0.0, 1, false, true, true, false, true)
+        DeleteEntity(prop)
 
-		exports.ox_target:addEntity(netId, {
+        exports.ox_target:addEntity(netId, {
 			name = 'transportTake',
 			label = locale('info.loot_truck'),
 			icon = 'fas fa-sack-dollar',
@@ -202,10 +203,7 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function()
 	ClearAreaOfVehicles(vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 15.0, false, false, false, false, false)
 	netId = lib.callback.await('qbx_truckrobbery:server:spawnVehicle', false, config.truckModel, vehicleSpawnCoords)
 	lib.waitFor(function()
-        if NetworkDoesEntityExistWithNetworkId(netId) then
-			truck = NetToVeh(netId)
-            return truck
-        end
+        return NetworkDoesEntityExistWithNetworkId(netId)
     end, locale('no_truck_spawned'))
 
 	exports.qbx_core:Notify(locale('info.truck_spotted'), 'inform')

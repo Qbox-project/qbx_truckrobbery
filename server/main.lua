@@ -28,7 +28,9 @@ lib.callback.register('qbx_truckrobbery:server:startMission', function(source)
 end)
 
 lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(_, model, coords)
-	local netId = qbx.spawnVehicle({spawnSource = coords, model = model})
+    local netId = qbx.spawnVehicle({spawnSource = coords, model = model})
+    local veh = NetworkGetEntityFromNetworkId(netId)
+    Entity(veh).state:set('truckstate', TruckState.DEFAULT, true)
 	return netId
 end)
 
