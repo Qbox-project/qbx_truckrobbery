@@ -1,5 +1,5 @@
 return {
-    dealerCoords = vec4(960.78, -216.25, 76.25, 1.8), -- place where the NPC stands
+    dealerCoords = vec4(960.78, -216.25, 75.25, 1.8), -- place where the NPC stands
 
     truckSpawns = { -- Possible truck spawn locations
         vec4(-1201.8, -370.18, 37.29, 27.79),
