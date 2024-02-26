@@ -157,8 +157,9 @@ local function plantBomb()
 		SetVehicleDoorBroken(truck, 3, false)
 		AddExplosion(transCoords.x,transCoords.y,transCoords.z, 'EXPLOSION_TANKER', 2.0, true, false, 2.0)
 		ApplyForceToEntity(truck, 0, 20.0, 500.0, 0.0, 0.0, 0.0, 0.0, 1, false, true, true, false, true)
+        DeleteEntity(prop)
 
-		exports.ox_target:addEntity(netId, {
+        exports.ox_target:addEntity(netId, {
 			name = 'transportTake',
 			label = locale('info.loot_truck'),
 			icon = 'fas fa-sack-dollar',
