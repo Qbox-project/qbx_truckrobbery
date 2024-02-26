@@ -15,7 +15,6 @@ return {
             item = 'black_money',
             minAmount = 250,
             maxAmount = 450,
-            probability = 1.0,
         },
         {
             item = 'security_card_01',
