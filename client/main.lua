@@ -2,7 +2,7 @@ local config = require 'config.client'
 local sharedConfig = require 'config.shared'
 local guardsDead = false
 local truckBlip
-local truckBlipuck
+local truck
 local netId
 local area
 local missionStarted = false
