@@ -136,6 +136,7 @@ local function plantBomb()
 			},
 		}
 	}) then
+		if Entity(truck).state.truckstate ~= TruckState.PLANTABLE then return end
 		local removeBomb = lib.callback.await('qbx_truckrobbery:server:plantedBomb', false)
 		if not removeBomb then return end
 		Entity(truck).state:set('truckstate', TruckState.PLANTED, true)
