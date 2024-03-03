@@ -84,7 +84,7 @@ local function lootTruck()
 			},
 		}
 	}) then
-		exports.ox_target:removeEntity(netId, 'transportTake')
+        Entity(truck).state:set('truckstate', TruckState.LOOTED)
 		SetPedComponentVariation(cache.ped, 5, 45, 0, 2)
 		lib.callback('qbx_truckrobbery:server:giveReward')
 		resetMission()
@@ -109,7 +109,7 @@ local function plantBomb()
 		exports.qbx_core:Notify(locale('error.missing_bomb'), 'error')
 		return
 	end
-	exports.ox_target:removeEntity(netId, 'transportPlant')
+
 	SetCurrentPedWeapon(cache.ped, `WEAPON_UNARMED`, true)
 	Wait(500)
 
@@ -145,44 +145,21 @@ local function plantBomb()
 	}) then
 		local removeBomb = lib.callback.await('qbx_truckrobbery:server:plantedBomb', false)
 		if not removeBomb then return end
-		exports.ox_target:removeEntity(netId, 'transportPlant')
+        Entity(truck).state:set('truckstate', TruckState.PLANTED, true)
 		local coords = GetEntityCoords(cache.ped)
 		local prop = CreateObject(`prop_c4_final_green`, coords.x, coords.y, coords.z + 0.2,  true,  true, true)
 		local detTime = config.timeToDetonation * 1000
 		AttachEntityToEntity(prop, truck, GetEntityBoneIndexByName(truck, 'door_pside_r'), -0.7, 0.0, 0.0, 0.0, 0.0, 0.0, true, true, false, true, 1, true)
 		exports.qbx_core:Notify(locale('info.bomb_timer', detTime), 'inform')
 		Wait(detTime)
+        Entity(truck).state:set('truckstate', TruckState.LOOTABLE, true)
 		local transCoords = GetEntityCoords(truck)
 		SetVehicleDoorBroken(truck, 2, false)
 		SetVehicleDoorBroken(truck, 3, false)
 		AddExplosion(transCoords.x,transCoords.y,transCoords.z, 'EXPLOSION_TANKER', 2.0, true, false, 2.0)
 		ApplyForceToEntity(truck, 0, 20.0, 500.0, 0.0, 0.0, 0.0, 0.0, 1, false, true, true, false, true)
         DeleteEntity(prop)
-
-        exports.ox_target:addEntity(netId, {
-			name = 'transportTake',
-			label = locale('info.loot_truck'),
-			icon = 'fas fa-sack-dollar',
-			canInteract = function()
-				return QBX.PlayerData.job.type ~= 'leo'
-			end,
-			onSelect = lootTruck,
-			distance = 3.0,
-		})
 	end
-end
-
-local function createBombPlantingTarget()
-	exports.ox_target:addEntity(netId, {
-		name = 'transportPlant',
-		label = locale('info.plant_bomb'),
-		icon = 'fas fa-bomb',
-		canInteract = function()
-			return QBX.PlayerData.job.type ~= 'leo'
-		end,
-		onSelect = plantBomb,
-		distance = 3.0,
-	})
 end
 
 RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function()
@@ -262,5 +239,38 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function()
 	TaskVehicleDriveWander(pilot, truck, 80.0, 536871867)
 	TaskVehicleDriveWander(navigator, truck, 80.0, 536871867)
 	missionStarted = true
-	createBombPlantingTarget()
+
+    Entity(truck).state:set('truckstate', TruckState.PLANTABLE, true)
+end)
+
+AddStateBagChangeHandler('truckstate', nil, function(bagName, _, value)
+    local _truck = GetEntityFromStateBagName(bagName)
+    if _truck == 0 then return end
+    if value == TruckState.PLANTABLE then
+        exports.ox_target:addLocalEntity(_truck, {
+            name = 'transportPlant',
+            label = locale('info.plant_bomb'),
+            icon = 'fas fa-bomb',
+            canInteract = function()
+                return QBX.PlayerData.job.type ~= 'leo'
+            end,
+            onSelect = plantBomb,
+            distance = 3.0,
+        })
+    elseif value == TruckState.PLANTED then
+        exports.ox_target:removeLocalEntity(_truck, 'transportPlant')
+    elseif value == TruckState.LOOTABLE then
+        exports.ox_target:addLocalEntity(_truck, {
+			name = 'transportTake',
+			label = locale('info.loot_truck'),
+			icon = 'fas fa-sack-dollar',
+			canInteract = function()
+				return QBX.PlayerData.job.type ~= 'leo'
+			end,
+			onSelect = lootTruck,
+			distance = 3.0,
+		})
+    elseif value == TruckState.LOOTED then
+		exports.ox_target:removeEntity(_truck, 'transportTake')
+    end
 end)
