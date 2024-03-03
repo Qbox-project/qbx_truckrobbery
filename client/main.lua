@@ -8,30 +8,6 @@ local area
 local missionStarted = false
 local dealer, pilot, navigator
 
-AddEventHandler('onResourceStart', function(resource)
-	if resource ~= cache.resource then return end
-	lib.requestModel(config.dealerModel, 5000)
-	dealer = CreatePed(26, config.dealerModel, config.dealerCoords.x, config.dealerCoords.y, config.dealerCoords.z, config.dealerCoords.w, false, false)
-	TaskStartScenarioInPlace(dealer, 'WORLD_HUMAN_AA_SMOKE', 0, false)
-	SetEntityInvincible(dealer, true)
-	SetBlockingOfNonTemporaryEvents(dealer, true)
-	Wait(1000)
-	FreezeEntityPosition(dealer, true)
-
-	exports.ox_target:addLocalEntity(dealer, {
-		name = 'dealer',
-		label = locale('mission.ask_for_mission'),
-		icon = 'fas fa-circle-check',
-		canInteract = function()
-			return not missionStarted and QBX.PlayerData.job.type ~= 'leo'
-		end,
-		onSelect = function()
-			lib.callback('qbx_truckrobbery:server:startMission')
-		end,
-		distance = 3.0,
-	})
-end)
-
 AddEventHandler('onResourceStop', function(resource)
 	if resource ~= cache.resource then return end
 	exports.ox_target:removeLocalEntity(dealer)
@@ -264,3 +240,24 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function()
 	missionStarted = true
 	createBombPlantingTarget()
 end)
+
+lib.requestModel(config.dealerModel, 5000)
+dealer = CreatePed(26, config.dealerModel, config.dealerCoords.x, config.dealerCoords.y, config.dealerCoords.z, config.dealerCoords.w, false, false)
+TaskStartScenarioInPlace(dealer, 'WORLD_HUMAN_AA_SMOKE', 0, false)
+SetEntityInvincible(dealer, true)
+SetBlockingOfNonTemporaryEvents(dealer, true)
+Wait(1000)
+FreezeEntityPosition(dealer, true)
+
+exports.ox_target:addLocalEntity(dealer, {
+    name = 'dealer',
+    label = locale('mission.ask_for_mission'),
+    icon = 'fas fa-circle-check',
+    canInteract = function()
+        return not missionStarted and QBX.PlayerData.job.type ~= 'leo'
+    end,
+    onSelect = function()
+        lib.callback('qbx_truckrobbery:server:startMission')
+    end,
+    distance = 3.0,
+})
