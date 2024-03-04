@@ -21,4 +21,5 @@ return {
             probability = 0.05
         }
     },
+    timeToDetonation = 30, -- Time in seconds till bomb detonation after placement
 }

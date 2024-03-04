@@ -5,6 +5,7 @@ local truck
 local area
 local missionStarted = false
 local dealer, pilot, navigator
+local c4Prop
 
 AddEventHandler('onResourceStop', function(resource)
 	if resource ~= cache.resource then return end
@@ -25,7 +26,7 @@ end
 
 lib.callback.register('qbx_truckrobbery:resetMission', resetMission)
 
-local function lootTruck(veh)
+local function lootTruck()
 	if lib.progressBar({
 		duration = 5000,
 		label = locale('info.looting_truck'),
@@ -45,22 +46,13 @@ local function lootTruck(veh)
 		prop = {
 			model = `prop_cs_heist_bag_02`,
 			bone = 57005,
-			pos = {
-				x = 0.0,
-				y = 0.0,
-				z = -0.16,
-			},
-			rot = {
-				x = 250.0,
-				y = -30.0,
-				z = 0.0,
-			},
+			pos = vec3(0.0, 0.0, -0.16),
+			rot = vec3(250.0, -30.0, 0.0),
 		}
 	}) then
-		if Entity(veh).state.truckstate ~= TruckState.LOOTABLE then return end
-        Entity(veh).state:set('truckstate', TruckState.LOOTED, true)
+		local success = lib.callback.await('qbx_truckrobbery:server:giveReward')
+		if not success then return end
 		SetPedComponentVariation(cache.ped, 5, 45, 0, 2)
-		lib.callback('qbx_truckrobbery:server:giveReward')
 		resetMission()
 	end
 end
@@ -100,35 +92,12 @@ local function plantBomb()
 		},
 		prop = {
 			model = `prop_c4_final_green`,
-			pos = {
-				x = 0.06,
-				y = 0.0,
-				z = 0.06,
-			},
-			rot = {
-				x = 90.0,
-				y = 0.0,
-				z = 0.0,
-			},
+			pos = vec3(0.06, 0.0, 0.06),
+			rot = vec3(90.0, 0.0, 0.0),
 		}
 	}) then
 		if Entity(truck).state.truckstate ~= TruckState.PLANTABLE then return end
-		local removeBomb = lib.callback.await('qbx_truckrobbery:server:plantedBomb', false)
-		if not removeBomb then return end
-		Entity(truck).state:set('truckstate', TruckState.PLANTED, true)
-		local coords = GetEntityCoords(cache.ped)
-		local prop = CreateObject(`prop_c4_final_green`, coords.x, coords.y, coords.z + 0.2,  true,  true, true)
-		local detTime = config.timeToDetonation * 1000
-		AttachEntityToEntity(prop, truck, GetEntityBoneIndexByName(truck, 'door_pside_r'), -0.7, 0.0, 0.0, 0.0, 0.0, 0.0, true, true, false, true, 1, true)
-		exports.qbx_core:Notify(locale('info.bomb_timer', detTime), 'inform')
-		Wait(detTime)
-		local transCoords = GetEntityCoords(truck)
-		SetVehicleDoorBroken(truck, 2, false)
-		SetVehicleDoorBroken(truck, 3, false)
-		AddExplosion(transCoords.x,transCoords.y,transCoords.z, 'EXPLOSION_TANKER', 2.0, true, false, 2.0)
-		ApplyForceToEntity(truck, 0, 20.0, 500.0, 0.0, 0.0, 0.0, 0.0, 1, false, true, true, false, true)
-        DeleteEntity(prop)
-		Entity(truck).state:set('truckstate', TruckState.LOOTABLE, true)
+		lib.callback('qbx_truckrobbery:server:plantedBomb')
 	end
 end
 
@@ -178,7 +147,7 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function()
 	CreateThread(function()
 		while true do
 			if IsPedDeadOrDying(pilot) or IsPedDeadOrDying(navigator) then
-				Entity(truck).state:set('truckstate', TruckState.PLANTABLE, true)
+				TriggerServerEvent('qbx_truckrobbery:server:guardKilled')
 				alertPolice()
 				return
 			end
@@ -212,12 +181,12 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function()
 	missionStarted = true
 end)
 
-AddStateBagChangeHandler('truckstate', nil, function(bagName, _, value)
-    local _truck = GetEntityFromStateBagName(bagName)
-	truck = _truck
-    if _truck == 0 then return end
+qbx.entityStateHandler('truckstate', function(entity, _, value)
+	lib.print.info("truckstate changed", value)
+	if entity == 0 then return end
+    truck = entity
     if value == TruckState.PLANTABLE then
-        exports.ox_target:addLocalEntity(_truck, {
+        exports.ox_target:addLocalEntity(truck, {
             name = 'transportPlant',
             label = locale('info.plant_bomb'),
             icon = 'fas fa-bomb',
@@ -228,23 +197,43 @@ AddStateBagChangeHandler('truckstate', nil, function(bagName, _, value)
             distance = 3.0,
         })
     elseif value == TruckState.PLANTED then
-        exports.ox_target:removeLocalEntity(_truck, 'transportPlant')
-		-- TODO: while in planted state, play sound from prop
+        exports.ox_target:removeLocalEntity(truck, 'transportPlant')
+		local coords = GetEntityCoords(cache.ped)
+		c4Prop = CreateObject(`prop_c4_final_green`, coords.x, coords.y, coords.z + 0.2,  false, false, true)
+		AttachEntityToEntity(c4Prop, truck, GetEntityBoneIndexByName(truck, 'door_pside_r'), -0.7, 0.0, 0.0, 0.0, 0.0, 0.0, true, true, false, true, 1, true)
+		while DoesEntityExist(c4Prop) do
+			if not DoesEntityExist(truck) then
+				DeleteObject(c4Prop)
+				return
+			end
+
+			qbx.playAudio({
+				audioName = 'IDLE_BEEP',
+				audioRef = 'EPSILONISM_04_SOUNDSET',
+				audioSource = c4Prop
+			})
+			Wait(1000)
+		end
     elseif value == TruckState.LOOTABLE then
-        exports.ox_target:addLocalEntity(_truck, {
+		if c4Prop and DoesEntityExist(c4Prop) then
+			DeleteObject(c4Prop)
+		end
+		if Entity(truck).state.truckstate == TruckState.PLANTED then
+			local transCoords = GetEntityCoords(truck)
+			AddExplosion(transCoords.x,transCoords.y,transCoords.z, 'EXPLOSION_TANKER', 2.0, true, false, 2.0)
+		end
+        exports.ox_target:addLocalEntity(truck, {
 			name = 'transportTake',
 			label = locale('info.loot_truck'),
 			icon = 'fas fa-sack-dollar',
 			canInteract = function()
 				return QBX.PlayerData.job.type ~= 'leo'
 			end,
-			onSelect = function()
-				lootTruck(_truck)
-			end,
+			onSelect = lootTruck,
 			distance = 3.0,
 		})
     elseif value == TruckState.LOOTED then
-		exports.ox_target:removeLocalEntity(_truck, 'transportTake')
+		exports.ox_target:removeLocalEntity(truck, 'transportTake')
     end
 end)
 
