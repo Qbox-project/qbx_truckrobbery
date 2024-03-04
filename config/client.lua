@@ -18,8 +18,6 @@ return {
     dealerModel = `s_m_y_dealer_01`, -- Model of the NPC that gives the mission
     guardModel = `s_m_m_security_01`, -- Model of the guard
 
-    timeToDetonation = 30, -- Time in seconds till bomb detonation after placement
-
     -- Used for mission notification
     emailNotification = function()
         TriggerServerEvent('qb-phone:server:sendNewMail', {
