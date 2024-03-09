@@ -117,7 +117,7 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function()
 		coords = vehicleSpawnCoords,
 		distance = 300,
 	})
-	 
+
 	function point:onEnter()
 		local netId = lib.callback.await('qbx_truckrobbery:server:spawnVehicle', false, vehicleSpawnCoords)
 		lib.waitFor(function()
@@ -125,11 +125,11 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function()
 				truck = NetToVeh(netId)
 				return truck
 			end
-    	end, locale('no_truck_spawned'))
+		end, locale('no_truck_spawned'))
 
 		exports.qbx_core:Notify(locale('info.truck_spotted'), 'inform')
 		RemoveBlip(area)
-		
+
 		truckBlip = AddBlipForEntity(truck)
 		SetBlipSprite(truckBlip, 67)
 		SetBlipColour(truckBlip, 1)
