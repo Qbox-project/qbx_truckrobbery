@@ -2,7 +2,6 @@
     "error": {
         "activation_cost": "Vous avez besoin de $ %{cost} en banque pour accepter la mission...",
         "get_out_water": "Sortez de l'eau...",
-        "guards_dead": "Les gardes doivent être morts pour placer la bombe...",
         "truck_moving": "Vous ne pouvez pas braquer un camion en mouvement...",
         "missing_bomb": "It appears you don't have a bomb...",
         "active_police": "Il faut au moins %s policiers pour activer la mission...",
