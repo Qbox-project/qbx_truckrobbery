@@ -2,12 +2,12 @@
     "error": {
         "activation_cost": "You need $%s in order to accept this mission...",
         "get_out_water": "You must get out of the water before planting the bomb...",
-        "guards_dead": "All the guards must be dead in order to place the bomb...",
         "truck_moving": "You can't rob a vehicle while it's moving...",
         "missing_bomb": "It appears you don't have a bomb...",
         "active_police": "You need at least %s police in order to activate this mission...",
         "already_active": "Someone is already carrying out a mission...",
-        "no_truck_spawned": "It looks like there is an issue spawning the armored truck..."
+        "no_truck_spawned": "It looks like there is an issue spawning the armored truck...",
+        "truck_escaped": "The truck has escaped! Mission Failed."
     },
     "success": {
         "looted": "You've successfully looted the truck"

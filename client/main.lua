@@ -4,7 +4,7 @@ local truckBlip
 local truck
 local area
 local missionStarted = false
-local dealer, pilot, navigator
+local dealer
 local c4Prop
 
 AddEventHandler('onResourceStop', function(resource)
@@ -13,8 +13,8 @@ AddEventHandler('onResourceStop', function(resource)
 	DeletePed(dealer)
 end)
 
-local function alertPolice()
-	lib.callback('qbx_truckrobbery:server:callCops', false, nil, GetEntityCoords(truck))
+local function alertPolice(coords)
+	lib.callback('qbx_truckrobbery:server:callCops', false, nil, coords)
 	PlaySoundFrontend(-1, 'Mission_Pass_Notify', 'DLC_HEISTS_GENERAL_FRONTEND_SOUNDS', false)
 end
 
@@ -103,86 +103,49 @@ end
 
 RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function()
 	exports.qbx_core:Notify('Go to the designated location to find the bank truck')
-	Wait(2000)
 	config.emailNotification()
-	Wait(3000)
 	local vehicleSpawnCoords = config.truckSpawns[math.random(1, #config.truckSpawns)]
 
-	lib.requestModel(config.truckModel)
-
-	area = AddBlipForRadius(vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 450.0)
+	area = AddBlipForRadius(vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 300.0)
 	SetBlipHighDetail(area, true)
 	SetBlipAlpha(area, 90)
 	SetBlipRoute(area, true)
 	SetBlipRouteColour(area, config.routeColor)
 	SetBlipColour(area, 1)
 
-	ClearAreaOfVehicles(vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 15.0, false, false, false, false, false)
-	local netId = lib.callback.await('qbx_truckrobbery:server:spawnVehicle', false, config.truckModel, vehicleSpawnCoords)
-	lib.waitFor(function()
-        if NetworkDoesEntityExistWithNetworkId(netId) then
-			truck = NetToVeh(netId)
-            return truck
-        end
-    end, locale('no_truck_spawned'))
+	local point = lib.points.new({
+		coords = vehicleSpawnCoords,
+		distance = 300,
+	})
 
-	exports.qbx_core:Notify(locale('info.truck_spotted'), 'inform')
-
-	RemoveBlip(area)
-
-	truckBlip = AddBlipForEntity(truck)
-	SetBlipSprite(truckBlip, 67)
-	SetBlipColour(truckBlip, 1)
-	SetBlipFlashes(truckBlip, true)
-	SetBlipRoute(truckBlip, true)
-	SetBlipRouteColour(truckBlip, config.routeColor)
-	BeginTextCommandSetBlipName('STRING')
-	AddTextComponentString('Armored Truck')
-	EndTextCommandSetBlipName(truckBlip)
-	lib.requestModel(config.guardModel, 5000)
-
-	pilot = CreatePed(26, config.guardModel, vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 268.9422, true, false)
-	navigator = CreatePed(26, config.guardModel, vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 268.9422, true, false)
-
-	CreateThread(function()
-		while true do
-			if IsPedDeadOrDying(pilot) or IsPedDeadOrDying(navigator) then
-				TriggerServerEvent('qbx_truckrobbery:server:guardKilled')
-				alertPolice()
-				return
+	function point:onEnter()
+		local netId = lib.callback.await('qbx_truckrobbery:server:spawnVehicle', false, vehicleSpawnCoords)
+		lib.waitFor(function()
+			if NetworkDoesEntityExistWithNetworkId(netId) then
+				truck = NetToVeh(netId)
+				return truck
 			end
-			Wait(1000)
-		end
-	end)
+		end, locale('no_truck_spawned'))
 
-	SetPedIntoVehicle(pilot, truck, -1)
-	SetPedIntoVehicle(navigator, truck, 0)
-	SetPedFleeAttributes(pilot, 0, false)
-	SetPedCombatAttributes(pilot, 46, true)
-	SetPedCombatAbility(pilot, 100)
-	SetPedCombatMovement(pilot, 2)
-	SetPedCombatRange(pilot, 2)
-	SetPedKeepTask(pilot, true)
-	GiveWeaponToPed(pilot, config.driverWeapon, 250, false, true)
-	SetPedAsCop(pilot, true)
+		exports.qbx_core:Notify(locale('info.truck_spotted'), 'inform')
+		RemoveBlip(area)
 
-	SetPedFleeAttributes(navigator, 0, false)
-	SetPedCombatAttributes(navigator, 46, true)
-	SetPedCombatAbility(navigator, 100)
-	SetPedCombatMovement(navigator, 2)
-	SetPedCombatRange(navigator, 2)
-	SetPedKeepTask(navigator, true)
-	TaskEnterVehicle(navigator,truck, -1, 0, 1.0, 1)
-	GiveWeaponToPed(navigator, config.passengerWeapon, 250, false, true)
-	SetPedAsCop(navigator, true)
-
-	TaskVehicleDriveWander(pilot, truck, 80.0, 536871867)
-	TaskVehicleDriveWander(navigator, truck, 80.0, 536871867)
+		truckBlip = AddBlipForEntity(truck)
+		SetBlipSprite(truckBlip, 67)
+		SetBlipColour(truckBlip, 1)
+		SetBlipFlashes(truckBlip, true)
+		SetBlipRoute(truckBlip, true)
+		SetBlipRouteColour(truckBlip, config.routeColor)
+		BeginTextCommandSetBlipName('STRING')
+		AddTextComponentString('Armored Truck')
+		EndTextCommandSetBlipName(truckBlip)
+		alertPolice(GetEntityCoords(vehicleSpawnCoords))
+		point:remove()
+	end
 	missionStarted = true
 end)
 
 qbx.entityStateHandler('truckstate', function(entity, _, value)
-	lib.print.info("truckstate changed", value)
 	if entity == 0 then return end
     truck = entity
     if value == TruckState.PLANTABLE then
@@ -235,6 +198,24 @@ qbx.entityStateHandler('truckstate', function(entity, _, value)
     elseif value == TruckState.LOOTED then
 		exports.ox_target:removeLocalEntity(truck, 'transportTake')
     end
+end)
+
+qbx.entityStateHandler('qbx_truckrobbery:initGuard', function(entity, _, value)
+	if not value then return end
+	while GetVehiclePedIsIn(entity, false) == 0 do
+		Wait(100)
+	end
+	SetPedFleeAttributes(entity, 0, false)
+	SetPedCombatAttributes(entity, 46, true)
+	SetPedCombatAbility(entity, 100)
+	SetPedCombatMovement(entity, 2)
+	SetPedCombatRange(entity, 2)
+	SetPedKeepTask(entity, true)
+	SetPedAsCop(entity, true)
+	SetPedHighlyPerceptive(entity, true)
+	TaskVehicleDriveWander(entity, truck, 60.0, 524860)
+
+	Entity(entity).state:set('qbx_truckrobbery:initGuard', false, true)
 end)
 
 lib.requestModel(config.dealerModel, 5000)

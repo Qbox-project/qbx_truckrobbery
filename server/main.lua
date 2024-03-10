@@ -2,6 +2,7 @@ local config = require 'config.server'
 local sharedConfig = require 'config.shared'
 local isMissionAvailable = true
 local truck
+local driver, passenger
 
 lib.callback.register('qbx_truckrobbery:server:startMission', function(source)
 	local player = exports.qbx_core:GetPlayer(source)
@@ -29,10 +30,29 @@ lib.callback.register('qbx_truckrobbery:server:startMission', function(source)
 	lib.callback('qbx_truckrobbery:client:resetMission', -1)
 end)
 
-lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(_, model, coords)
-    local netId = qbx.spawnVehicle({spawnSource = coords, model = model})
+lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(source, coords)
+    local netId = qbx.spawnVehicle({spawnSource = coords, model = config.truckModel})
     truck = NetworkGetEntityFromNetworkId(netId)
-    Entity(truck).state:set('truckstate', TruckState.DEFAULT, true)
+	SetVehicleDoorsLocked(truck, 2)
+    Entity(truck).state:set('truckstate', TruckState.PLANTABLE, true)
+	driver = CreatePed(26, config.guardModel, coords.x, coords.y, coords.z, 268.9422, true, false)
+	passenger = CreatePed(26, config.guardModel, coords.x, coords.y, coords.z, 268.9422, true, false)
+	SetPedIntoVehicle(driver, truck, -1)
+	SetPedIntoVehicle(passenger, truck, 0)
+	GiveWeaponToPed(driver, config.driverWeapon, 250, false, true)
+	GiveWeaponToPed(passenger, config.passengerWeapon, 250, false, true)
+	Entity(driver).state:set('qbx_truckrobbery:initGuard', true, true)
+	Entity(passenger).state:set('qbx_truckrobbery:initGuard', true, true)
+	CreateThread(function()
+		while NetworkGetEntityOwner(truck) ~= -1 do
+			if isMissionAvailable then
+				return
+			end
+			Wait(10000)
+		end
+		DeleteEntity(truck)
+		exports.qbx_core:Notify(source, locale('truck_escaped'), 'error')
+	end)
 	return netId
 end)
 
@@ -79,8 +99,4 @@ lib.callback.register('qbx_truckrobbery:server:giveReward', function(source)
     end
 	exports.qbx_core:Notify(source, locale('success.looted'), 'success')
 	return true
-end)
-
-RegisterNetEvent('qbx_truckrobbery:server:guardKilled', function()
-	Entity(truck).state:set('truckstate', TruckState.PLANTABLE, true)
 end)
