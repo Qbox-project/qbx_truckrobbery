@@ -2,7 +2,6 @@ local config = require 'config.server'
 local sharedConfig = require 'config.shared'
 local isMissionAvailable = true
 local truck
-local driver, passenger
 
 lib.callback.register('qbx_truckrobbery:server:startMission', function(source)
 	local player = exports.qbx_core:GetPlayer(source)
@@ -30,19 +29,23 @@ lib.callback.register('qbx_truckrobbery:server:startMission', function(source)
 	lib.callback('qbx_truckrobbery:client:resetMission', -1)
 end)
 
+local function spawnGuardInSeat(seat, weapon)
+	local coords = GetEntityCoords(truck)
+	local guard = CreatePed(26, config.guardModel, coords.x, coords.y, coords.z, 268.9422, true, false)
+	SetPedIntoVehicle(guard, truck, seat)
+	GiveWeaponToPed(guard, weapon, 250, false, true)
+	Entity(guard).state:set('qbx_truckrobbery:initGuard', true, true)
+end
+
 lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(source, coords)
     local netId = qbx.spawnVehicle({spawnSource = coords, model = config.truckModel})
     truck = NetworkGetEntityFromNetworkId(netId)
 	SetVehicleDoorsLocked(truck, 2)
     Entity(truck).state:set('truckstate', TruckState.PLANTABLE, true)
-	driver = CreatePed(26, config.guardModel, coords.x, coords.y, coords.z, 268.9422, true, false)
-	passenger = CreatePed(26, config.guardModel, coords.x, coords.y, coords.z, 268.9422, true, false)
-	SetPedIntoVehicle(driver, truck, -1)
-	SetPedIntoVehicle(passenger, truck, 0)
-	GiveWeaponToPed(driver, config.driverWeapon, 250, false, true)
-	GiveWeaponToPed(passenger, config.passengerWeapon, 250, false, true)
-	Entity(driver).state:set('qbx_truckrobbery:initGuard', true, true)
-	Entity(passenger).state:set('qbx_truckrobbery:initGuard', true, true)
+	spawnGuardInSeat(-1, config.driverWeapon)
+	spawnGuardInSeat(0, config.passengerWeapon)
+	spawnGuardInSeat(1, config.backPassengerWeapon)
+	spawnGuardInSeat(2, config.backPassengerWeapon)
 	CreateThread(function()
 		while NetworkGetEntityOwner(truck) ~= -1 do
 			if isMissionAvailable then

@@ -21,4 +21,5 @@ return {
             message = locale('mission.message'),
         })
     end,
+    guardAccuracy = 50,
 }

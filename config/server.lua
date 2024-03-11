@@ -23,7 +23,8 @@ return {
     },
     timeToDetonation = 30, -- Time in seconds till bomb detonation after placement
     driverWeapon = `WEAPON_COMBATPISTOL`, -- Weapon of the driver
-    passengerWeapon = `WEAPON_COMBATPISTOL`, -- Weapon of the passenger
+    passengerWeapon = `WEAPON_COMBATSHOTGUN`, -- Weapon of the passenger
+    backPassengerWeapon = `WEAPON_TACTICALRIFLE`,
     truckModel = `Stockade`, -- Model of the truck
     guardModel = `s_m_m_security_01`, -- Model of the guard
 }
