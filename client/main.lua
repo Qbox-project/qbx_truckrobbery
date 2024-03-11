@@ -69,7 +69,7 @@ local function plantBomb()
 		exports.qbx_core:Notify(locale('error.missing_bomb'), 'error')
 		return
 	end
-    TriggerClientEvent('ox_inventory:disarm', cache.playerId)
+    TriggerEvent('ox_inventory:disarm', cache.playerId)
 	Wait(500)
 
 	if lib.progressBar({
