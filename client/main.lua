@@ -158,7 +158,7 @@ qbx.entityStateHandler('truckstate', function(entity, _, value)
             end,
 			bones = {
 				'seat_dside_r',
-        		'seat_pside_r',
+				'seat_pside_r',
 			},
             onSelect = plantBomb,
             distance = 3.0,
@@ -198,7 +198,7 @@ qbx.entityStateHandler('truckstate', function(entity, _, value)
 			end,
 			bones = {
 				'seat_dside_r',
-        		'seat_pside_r',
+				'seat_pside_r',
 			},
 			onSelect = lootTruck,
 			distance = 3.0,
