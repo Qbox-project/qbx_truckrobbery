@@ -27,4 +27,32 @@ return {
     backPassengerWeapon = `WEAPON_TACTICALRIFLE`,
     truckModel = `Stockade`, -- Model of the truck
     guardModel = `s_m_m_security_01`, -- Model of the guard
+
+    truckSpawns = { -- Possible truck spawn locations
+        vec4(-1201.8, -370.18, 37.29, 27.79),
+        vec4(-2036.59, -259.78, 23.39, 136.92),
+        vec4(-1292.28, -807.36, 17.19, 308.12),
+        vec4(1072.27, -1950.67, 30.62, 144.03),
+        vec4(1001.3, -55.03, 74.57, 117.98),
+        vec4(-4.7, -669.71, 32.34, 176.32),
+    },
+
+    alertPolice = function(coords)
+        local msg = locale("info.alert_desc")
+        local alertData = {
+            title = locale('info.alert_title'),
+            coords = {
+                x = coords.x,
+                y = coords.y,
+                z = coords.z
+            },
+            description = msg
+        }
+        local numCops, copSrcs = exports.qbx_core:GetDutyCountType('leo')
+        for i = 1, numCops do
+            local copSrc = copSrcs[i]
+            TriggerClientEvent('police:client:policeAlert', copSrc, coords, msg)
+            TriggerClientEvent('qb-phone:client:addPoliceAlert', copSrc, alertData)
+        end
+    end
 }
