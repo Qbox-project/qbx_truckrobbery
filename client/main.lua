@@ -156,6 +156,10 @@ qbx.entityStateHandler('truckstate', function(entity, _, value)
             canInteract = function()
                 return QBX.PlayerData.job.type ~= 'leo'
             end,
+			bones = {
+				'seat_dside_r',
+        		'seat_pside_r',
+			},
             onSelect = plantBomb,
             distance = 3.0,
         })
@@ -192,6 +196,10 @@ qbx.entityStateHandler('truckstate', function(entity, _, value)
 			canInteract = function()
 				return QBX.PlayerData.job.type ~= 'leo'
 			end,
+			bones = {
+				'seat_dside_r',
+        		'seat_pside_r',
+			},
 			onSelect = lootTruck,
 			distance = 3.0,
 		})
@@ -212,9 +220,9 @@ qbx.entityStateHandler('qbx_truckrobbery:initGuard', function(entity, _, value)
 	SetPedCombatRange(entity, 2)
 	SetPedKeepTask(entity, true)
 	SetPedAsCop(entity, true)
-	SetPedHighlyPerceptive(entity, true)
+	SetPedCanSwitchWeapon(entity, true)
+	SetPedAccuracy(entity, config.guardAccuracy)
 	TaskVehicleDriveWander(entity, truck, 60.0, 524860)
-
 	Entity(entity).state:set('qbx_truckrobbery:initGuard', false, true)
 end)
 
