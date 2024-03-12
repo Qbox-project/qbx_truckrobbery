@@ -59,13 +59,15 @@ lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(source, c
 		exports.qbx_core:Notify(source, locale('truck_escaped'), 'error')
 	end)
 	CreateThread(function()
-		while not lib.getClosestPlayer(GetEntityCoords(truck), 5) do
+        local closestPlayer = nil
+        while not closestPlayer do
+            closestPlayer = lib.getClosestPlayer(GetEntityCoords(truck), 5)
 			if isMissionAvailable or state.truckstate == TruckState.PLANTED then
 				return
 			end
 			Wait(10000)
 		end
-		config.alertPolice(coords)
+		config.alertPolice(closestPlayer, coords)
 	end)
 	return netId
 end)
