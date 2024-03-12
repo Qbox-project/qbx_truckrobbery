@@ -37,7 +37,7 @@ return {
         vec4(-4.7, -669.71, 32.34, 176.32),
     },
 
-    alertPolice = function(coords)
+    alertPolice = function(src, coords)
         local msg = locale("info.alert_desc")
         local alertData = {
             title = locale('info.alert_title'),
