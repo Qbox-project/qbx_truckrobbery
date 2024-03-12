@@ -3,7 +3,6 @@ local sharedConfig = require 'config.shared'
 local truckBlip
 local truck
 local area
-local missionStarted = false
 local dealer
 local c4Prop
 
@@ -19,7 +18,6 @@ local function alertPolice(coords)
 end
 
 local function resetMission()
-    missionStarted = false
     RemoveBlip(truckBlip)
     RemoveBlip(area)
 end
@@ -71,7 +69,7 @@ local function plantBomb()
 		exports.qbx_core:Notify(locale('error.missing_bomb'), 'error')
 		return
 	end
-	SetCurrentPedWeapon(cache.ped, `WEAPON_UNARMED`, true)
+    TriggerEvent('ox_inventory:disarm', cache.playerId)
 	Wait(500)
 
 	if lib.progressBar({
@@ -101,10 +99,9 @@ local function plantBomb()
 	end
 end
 
-RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function()
+RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function(vehicleSpawnCoords)
 	exports.qbx_core:Notify('Go to the designated location to find the bank truck')
 	config.emailNotification()
-	local vehicleSpawnCoords = config.truckSpawns[math.random(1, #config.truckSpawns)]
 
 	area = AddBlipForRadius(vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 300.0)
 	SetBlipHighDetail(area, true)
@@ -139,10 +136,9 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function()
 		BeginTextCommandSetBlipName('STRING')
 		AddTextComponentString('Armored Truck')
 		EndTextCommandSetBlipName(truckBlip)
-		alertPolice(GetEntityCoords(vehicleSpawnCoords))
+		alertPolice(vehicleSpawnCoords)
 		point:remove()
 	end
-	missionStarted = true
 end)
 
 qbx.entityStateHandler('truckstate', function(entity, _, value)
@@ -213,6 +209,8 @@ qbx.entityStateHandler('qbx_truckrobbery:initGuard', function(entity, _, value)
 	while GetVehiclePedIsIn(entity, false) == 0 do
 		Wait(100)
 	end
+    if NetworkGetEntityOwner(entity) ~= cache.playerId then return end
+
 	SetPedFleeAttributes(entity, 0, false)
 	SetPedCombatAttributes(entity, 46, true)
 	SetPedCombatAbility(entity, 100)
@@ -239,7 +237,7 @@ exports.ox_target:addLocalEntity(dealer, {
     label = locale('mission.ask_for_mission'),
     icon = 'fas fa-circle-check',
     canInteract = function()
-        return not missionStarted and QBX.PlayerData.job.type ~= 'leo'
+        return QBX.PlayerData.job.type ~= 'leo'
     end,
     onSelect = function()
         lib.callback('qbx_truckrobbery:server:startMission')

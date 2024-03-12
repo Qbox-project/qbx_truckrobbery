@@ -1,3 +1,3 @@
 return {
-    bombItem = 'meth'
+    bombItem = 'weapon_stickybomb'
 }

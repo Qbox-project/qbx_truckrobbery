@@ -22,7 +22,8 @@ lib.callback.register('qbx_truckrobbery:server:startMission', function(source)
 
 	player.Functions.RemoveMoney('bank', config.activationCost, 'armored-truck')
 	isMissionAvailable = false
-	TriggerClientEvent('qbx_truckrobbery:client:missionStarted', source)
+    local coords = config.truckSpawns[math.random(1, #config.truckSpawns)]
+	TriggerClientEvent('qbx_truckrobbery:client:missionStarted', source, coords)
 	Wait(config.missionCooldown)
 	isMissionAvailable = true
 	truck = nil
@@ -41,14 +42,15 @@ lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(source, c
     local netId = qbx.spawnVehicle({spawnSource = coords, model = config.truckModel})
     truck = NetworkGetEntityFromNetworkId(netId)
 	SetVehicleDoorsLocked(truck, 2)
-    Entity(truck).state:set('truckstate', TruckState.PLANTABLE, true)
+    local state = Entity(truck).state
+    state:set('truckstate', TruckState.PLANTABLE, true)
 	spawnGuardInSeat(-1, config.driverWeapon)
 	spawnGuardInSeat(0, config.passengerWeapon)
 	spawnGuardInSeat(1, config.backPassengerWeapon)
 	spawnGuardInSeat(2, config.backPassengerWeapon)
 	CreateThread(function()
 		while NetworkGetEntityOwner(truck) ~= -1 do
-			if isMissionAvailable then
+			if isMissionAvailable or state.truckstate == TruckState.LOOTED then
 				return
 			end
 			Wait(10000)
@@ -60,22 +62,7 @@ lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(source, c
 end)
 
 lib.callback.register('qbx_truckrobbery:server:callCops', function(_, coords)
-	local msg = locale("info.alert_desc")
-    local alertData = {
-        title = locale('info.alert_title'),
-        coords = {
-            x = coords.x,
-            y = coords.y,
-            z = coords.z
-        },
-        description = msg
-    }
-	local numCops, copSrcs = exports.qbx_core:GetDutyCountType('leo')
-	for i = 1, numCops do
-		local copSrc = copSrcs[i]
-		TriggerClientEvent('police:client:policeAlert', copSrc, coords, msg)
-		TriggerClientEvent('qb-phone:client:addPoliceAlert', copSrc, alertData)
-	end
+    config.alertPolice(coords)
 end)
 
 lib.callback.register('qbx_truckrobbery:server:plantedBomb', function(source)
