@@ -12,11 +12,6 @@ AddEventHandler('onResourceStop', function(resource)
 	DeletePed(dealer)
 end)
 
-local function alertPolice(coords)
-	lib.callback('qbx_truckrobbery:server:callCops', false, nil, coords)
-	PlaySoundFrontend(-1, 'Mission_Pass_Notify', 'DLC_HEISTS_GENERAL_FRONTEND_SOUNDS', false)
-end
-
 local function resetMission()
     RemoveBlip(truckBlip)
     RemoveBlip(area)
@@ -136,7 +131,7 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function(vehicleSpawn
 		BeginTextCommandSetBlipName('STRING')
 		AddTextComponentString('Armored Truck')
 		EndTextCommandSetBlipName(truckBlip)
-		alertPolice(vehicleSpawnCoords)
+		PlaySoundFrontend(-1, 'Mission_Pass_Notify', 'DLC_HEISTS_GENERAL_FRONTEND_SOUNDS', false)
 		point:remove()
 	end
 end)

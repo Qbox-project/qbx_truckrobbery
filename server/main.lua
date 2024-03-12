@@ -58,11 +58,16 @@ lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(source, c
 		DeleteEntity(truck)
 		exports.qbx_core:Notify(source, locale('truck_escaped'), 'error')
 	end)
+	CreateThread(function()
+		while not lib.getClosestPlayer(GetEntityCoords(truck), 5) do
+			if isMissionAvailable or state.truckstate == TruckState.PLANTED then
+				return
+			end
+			Wait(10000)
+		end
+		config.alertPolice(coords)
+	end)
 	return netId
-end)
-
-lib.callback.register('qbx_truckrobbery:server:callCops', function(_, coords)
-    config.alertPolice(coords)
 end)
 
 lib.callback.register('qbx_truckrobbery:server:plantedBomb', function(source)
