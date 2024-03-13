@@ -29,12 +29,14 @@ return {
     guardModel = `s_m_m_security_01`, -- Model of the guard
 
     truckSpawns = { -- Possible truck spawn locations
-        vec4(-1201.8, -370.18, 37.29, 27.79),
-        vec4(-2036.59, -259.78, 23.39, 136.92),
-        vec4(-1292.28, -807.36, 17.19, 308.12),
-        vec4(1072.27, -1950.67, 30.62, 144.03),
-        vec4(1001.3, -55.03, 74.57, 117.98),
-        vec4(-4.7, -669.71, 32.34, 176.32),
+        vec4(-281.05, -617.55, 33.35, 276.51), -- Daily Globe International
+        vec4(2.55, -671.9, 32.34, 181.81), -- Union Depository (1)
+        vec4(-19.54, -672.65, 32.34, 183.36), -- Union Depository (2)
+        vec4(-34.64, -674.35, 32.34, 177.9), -- Union Depository (3)
+        vec4(147.24, -1081.15, 29.19, 1.6), -- Legion Square Bank
+        vec4(-1187.67, -321.86, 37.61, 22.79), -- Rockford Hills Bank
+        vec4(276.2, -172.81, 60.54, 70.45), -- Parking garage near Hawick Bank
+        vec4(255.49, 278.25, 105.59, 67.0), -- Behind Pacific Bank
     },
 
     alertPolice = function(src, coords)

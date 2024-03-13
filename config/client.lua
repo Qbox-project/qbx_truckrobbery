@@ -12,4 +12,5 @@ return {
         })
     end,
     guardAccuracy = 50,
+    lootDuration = 5000 -- how many milliseconds it takes to loot the truck
 }

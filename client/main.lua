@@ -21,7 +21,7 @@ lib.callback.register('qbx_truckrobbery:resetMission', resetMission)
 
 local function lootTruck()
 	if lib.progressBar({
-		duration = 5000,
+		duration = config.lootDuration,
 		label = locale('info.looting_truck'),
 		useWhileDead = false,
 		canCancel = true,
