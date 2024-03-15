@@ -2,6 +2,7 @@ local config = require 'config.server'
 local sharedConfig = require 'config.shared'
 local isMissionAvailable = true
 local truck
+lib.locale()
 
 lib.callback.register('qbx_truckrobbery:server:startMission', function(source)
 	local player = exports.qbx_core:GetPlayer(source)
@@ -30,24 +31,26 @@ lib.callback.register('qbx_truckrobbery:server:startMission', function(source)
 	lib.callback('qbx_truckrobbery:client:resetMission', -1)
 end)
 
-local function spawnGuardInSeat(seat, weapon)
-	local coords = GetEntityCoords(truck)
-	local guard = CreatePed(26, config.guardModel, coords.x, coords.y, coords.z, 268.9422, true, false)
-	SetPedIntoVehicle(guard, truck, seat)
+local function spawnGuardInSeat(veh, seat, weapon)
+	local guard = CreatePedInsideVehicle(veh, 26, config.guardModel, seat, true, false)
+	lib.waitFor(function()
+		return DoesEntityExist(guard) or nil
+	end, "guard does not exist")
 	GiveWeaponToPed(guard, weapon, 250, false, true)
 	Entity(guard).state:set('qbx_truckrobbery:initGuard', true, true)
+	Wait(0)
 end
 
 lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(source, coords)
-    local netId = qbx.spawnVehicle({spawnSource = coords, model = config.truckModel})
-    truck = NetworkGetEntityFromNetworkId(netId)
+    local netId, truck = qbx.spawnVehicle({spawnSource = coords, model = config.truckModel})
 	SetVehicleDoorsLocked(truck, 2)
     local state = Entity(truck).state
     state:set('truckstate', TruckState.PLANTABLE, true)
-	spawnGuardInSeat(-1, config.driverWeapon)
-	spawnGuardInSeat(0, config.passengerWeapon)
-	spawnGuardInSeat(1, config.backPassengerWeapon)
-	spawnGuardInSeat(2, config.backPassengerWeapon)
+    Wait(0)
+	spawnGuardInSeat(truck, -1, config.driverWeapon)
+	spawnGuardInSeat(truck, 0, config.passengerWeapon)
+	spawnGuardInSeat(truck, 1, config.backPassengerWeapon)
+	spawnGuardInSeat(truck, 2, config.backPassengerWeapon)
 	CreateThread(function()
 		while NetworkGetEntityOwner(truck) ~= -1 do
 			if isMissionAvailable or state.truckstate == TruckState.LOOTED then
