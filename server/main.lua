@@ -31,8 +31,8 @@ lib.callback.register('qbx_truckrobbery:server:startMission', function(source)
 	lib.callback('qbx_truckrobbery:client:resetMission', -1)
 end)
 
-local function spawnGuardInSeat(veh, seat, weapon)
-	local guard = CreatePedInsideVehicle(veh, 26, config.guardModel, seat, true, false)
+local function spawnGuardInSeat(seat, weapon)
+	local guard = CreatePedInsideVehicle(truck, 26, config.guardModel, seat, true, false)
 	lib.waitFor(function()
 		return DoesEntityExist(guard) or nil
 	end, "guard does not exist")
@@ -42,15 +42,16 @@ local function spawnGuardInSeat(veh, seat, weapon)
 end
 
 lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(source, coords)
-    local netId, truck = qbx.spawnVehicle({spawnSource = coords, model = config.truckModel})
+    local netId, veh = qbx.spawnVehicle({spawnSource = coords, model = config.truckModel})
+	truck = veh
 	SetVehicleDoorsLocked(truck, 2)
     local state = Entity(truck).state
     state:set('truckstate', TruckState.PLANTABLE, true)
     Wait(0)
-	spawnGuardInSeat(truck, -1, config.driverWeapon)
-	spawnGuardInSeat(truck, 0, config.passengerWeapon)
-	spawnGuardInSeat(truck, 1, config.backPassengerWeapon)
-	spawnGuardInSeat(truck, 2, config.backPassengerWeapon)
+	spawnGuardInSeat(-1, config.driverWeapon)
+	spawnGuardInSeat(0, config.passengerWeapon)
+	spawnGuardInSeat(1, config.backPassengerWeapon)
+	spawnGuardInSeat(2, config.backPassengerWeapon)
 	CreateThread(function()
 		while NetworkGetEntityOwner(truck) ~= -1 do
 			if isMissionAvailable or state.truckstate == TruckState.LOOTED then
