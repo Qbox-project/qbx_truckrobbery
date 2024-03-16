@@ -100,10 +100,8 @@ lib.callback.register('qbx_truckrobbery:server:giveReward', function(source)
             if exports.ox_inventory:CanCarryItem(source, reward.item, amount) then
                 exports.ox_inventory:AddItem(source, reward.item, amount)
             else
-                cantCarryRewards[cantCarryRewardsSize] = reward.item
                 cantCarryRewardsSize += 1
-                cantCarryRewards[cantCarryRewardsSize] = amount
-                cantCarryRewardsSize += 1
+                cantCarryRewards[cantCarryRewardsSize] = {reward.item, amount}
             end
         end
     end
