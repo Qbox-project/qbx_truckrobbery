@@ -91,12 +91,25 @@ end)
 lib.callback.register('qbx_truckrobbery:server:giveReward', function(source)
 	if Entity(truck).state.truckstate ~= TruckState.LOOTABLE then return end
 	Entity(truck).state:set('truckstate', TruckState.LOOTED, true)
+    local cantCarryRewards = {}
+    local cantCarryRewardsSize = 0
     for i = 1, #config.rewards do
         local reward = config.rewards[i]
         if not reward.probability or math.random() <= reward.probability then
             local amount = math.random(reward.minAmount or 1, reward.maxAmount or 1)
-            exports.ox_inventory:AddItem(source, reward.item, amount)
+            if exports.ox_inventory:CanCarryItem(source, reward.item, amount) then
+                exports.ox_inventory:AddItem(source, reward.item, amount)
+            else
+                cantCarryRewards[cantCarryRewardsSize] = reward.item
+                cantCarryRewardsSize += 1
+                cantCarryRewards[cantCarryRewardsSize] = amount
+                cantCarryRewardsSize += 1
+            end
         end
+    end
+
+    if cantCarryRewardsSize > 0 then
+        exports.ox_inventory:CustomDrop('Loot', cantCarryRewards, GetEntityCoords(GetPlayerPed(source)))
     end
 	exports.qbx_core:Notify(source, locale('success.looted'), 'success')
 	return true
