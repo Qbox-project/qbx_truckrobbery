@@ -8,8 +8,10 @@ local c4Prop
 
 AddEventHandler('onResourceStop', function(resource)
 	if resource ~= cache.resource then return end
-	exports.ox_target:removeLocalEntity(dealer)
-	DeletePed(dealer)
+	if dealer then
+        exports.ox_target:removeLocalEntity(dealer)
+        DeletePed(dealer)
+    end
 end)
 
 local function resetMission()
@@ -219,23 +221,36 @@ qbx.entityStateHandler('qbx_truckrobbery:initGuard', function(entity, _, value)
 	Entity(entity).state:set('qbx_truckrobbery:initGuard', false, true)
 end)
 
-lib.requestModel(config.dealerModel, 5000)
-dealer = CreatePed(26, config.dealerModel, config.dealerCoords.x, config.dealerCoords.y, config.dealerCoords.z, config.dealerCoords.w, false, false)
-TaskStartScenarioInPlace(dealer, 'WORLD_HUMAN_AA_SMOKE', 0, false)
-SetEntityInvincible(dealer, true)
-SetBlockingOfNonTemporaryEvents(dealer, true)
-Wait(1000)
-FreezeEntityPosition(dealer, true)
-
-exports.ox_target:addLocalEntity(dealer, {
-    name = 'dealer',
-    label = locale('mission.ask_for_mission'),
-    icon = 'fas fa-circle-check',
-    canInteract = function()
-        return QBX.PlayerData.job.type ~= 'leo'
-    end,
-    onSelect = function()
-        lib.callback('qbx_truckrobbery:server:startMission')
-    end,
-    distance = 3.0,
+local dealerPos = lib.points.new({
+    coords = config.dealerCoords.xyz,
+    distance = 400,
 })
+
+function dealerPos:onEnter()
+    lib.requestModel(config.dealerModel, 5000)
+    dealer = CreatePed(26, config.dealerModel, config.dealerCoords.x, config.dealerCoords.y, config.dealerCoords.z, config.dealerCoords.w, false, false)
+    SetModelAsNoLongerNeeded(config.dealerModel)
+    TaskStartScenarioInPlace(dealer, 'WORLD_HUMAN_AA_SMOKE', 0, false)
+    SetEntityInvincible(dealer, true)
+    SetBlockingOfNonTemporaryEvents(dealer, true)
+    FreezeEntityPosition(dealer, true)
+
+    exports.ox_target:addLocalEntity(dealer, {
+        name = 'dealer',
+        label = locale('mission.ask_for_mission'),
+        icon = 'fas fa-circle-check',
+        canInteract = function()
+            return QBX.PlayerData.job.type ~= 'leo'
+        end,
+        onSelect = function()
+            lib.callback('qbx_truckrobbery:server:startMission')
+        end,
+        distance = 3.0,
+    })
+end
+
+function dealerPos:onExit()
+    exports.ox_target:removeLocalEntity(dealer)
+    DeletePed(dealer)
+    dealer = nil
+end
