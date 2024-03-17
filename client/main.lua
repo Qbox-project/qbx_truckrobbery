@@ -22,34 +22,44 @@ end
 lib.callback.register('qbx_truckrobbery:resetMission', resetMission)
 
 local function lootTruck()
-	if lib.progressBar({
-		duration = config.lootDuration,
-		label = locale('info.looting_truck'),
-		useWhileDead = false,
-		canCancel = true,
-		disable = {
-			move = true,
-			car = true,
-			combat = true,
-			mouse = false,
-		},
-		anim = {
-			dict = 'anim@heists@ornate_bank@grab_cash_heels',
-			clip = 'grab',
-			flag = 1,
-		},
-		prop = {
-			model = `prop_cs_heist_bag_02`,
-			bone = 57005,
-			pos = vec3(0.0, 0.0, -0.16),
-			rot = vec3(250.0, -30.0, 0.0),
-		}
-	}) then
-		local success = lib.callback.await('qbx_truckrobbery:server:giveReward')
-		if not success then return end
-		SetPedComponentVariation(cache.ped, 5, 45, 0, 2)
-		resetMission()
-	end
+    local looting = true
+	CreateThread(function()
+        if lib.progressBar({
+            duration = config.lootDuration,
+            label = locale('info.looting_truck'),
+            useWhileDead = false,
+            canCancel = true,
+            disable = {
+                move = true,
+                car = true,
+                combat = true,
+                mouse = false,
+            },
+            anim = {
+                dict = 'anim@heists@ornate_bank@grab_cash_heels',
+                clip = 'grab',
+                flag = 1,
+            },
+            prop = {
+                model = `prop_cs_heist_bag_02`,
+                bone = 57005,
+                pos = vec3(0.0, 0.0, -0.16),
+                rot = vec3(250.0, -30.0, 0.0),
+            }
+        }) then
+            local success = lib.callback.await('qbx_truckrobbery:server:giveReward')
+            if not success then return end
+            SetPedComponentVariation(cache.ped, 5, 45, 0, 2)
+            resetMission()
+        end
+        looting = false
+    end)
+    while looting do
+        if #(GetEntityCoords(cache.ped) - GetEntityCoords(truck)) > 3 then
+            lib.cancelProgress()
+        end
+        Wait(1000)
+    end
 end
 
 local function plantBomb()
