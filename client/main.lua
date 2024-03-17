@@ -248,7 +248,7 @@ function dealerPos:onEnter()
     exports.ox_target:addLocalEntity(dealer, {
         name = 'dealer',
         label = locale('mission.ask_for_mission'),
-        icon = 'fas fa-circle-check',
+        icon = 'fas fa-truck-fast',
         canInteract = function()
             return QBX.PlayerData.job.type ~= 'leo'
         end,
