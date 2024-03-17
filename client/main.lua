@@ -129,7 +129,7 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function(vehicleSpawn
 				truck = NetToVeh(netId)
 				return truck
 			end
-		end, locale('no_truck_spawned'))
+		end, locale('error.no_truck_spawned'))
 
 		exports.qbx_core:Notify(locale('info.truck_spotted'), 'inform')
 		RemoveBlip(area)
