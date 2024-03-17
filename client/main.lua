@@ -119,7 +119,7 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function(vehicleSpawn
 
 	local point = lib.points.new({
 		coords = vehicleSpawnCoords,
-		distance = 300,
+		distance = 250,
 	})
 
 	function point:onEnter()
