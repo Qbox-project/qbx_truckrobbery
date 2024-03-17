@@ -110,7 +110,7 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function(vehicleSpawn
 	exports.qbx_core:Notify('Go to the designated location to find the bank truck')
 	config.emailNotification()
 
-	area = AddBlipForRadius(vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 300.0)
+	area = AddBlipForRadius(vehicleSpawnCoords.x, vehicleSpawnCoords.y, vehicleSpawnCoords.z, 250.0)
 	SetBlipHighDetail(area, true)
 	SetBlipAlpha(area, 90)
 	SetBlipRoute(area, true)
@@ -119,7 +119,7 @@ RegisterNetEvent('qbx_truckrobbery:client:missionStarted', function(vehicleSpawn
 
 	local point = lib.points.new({
 		coords = vehicleSpawnCoords,
-		distance = 300,
+		distance = 250,
 	})
 
 	function point:onEnter()
