@@ -1,8 +1,8 @@
+lib.locale()
 local config = require 'config.server'
 local sharedConfig = require 'config.shared'
 local isMissionAvailable = true
 local truck
-lib.locale()
 
 lib.callback.register('qbx_truckrobbery:server:startMission', function(source)
 	local player = exports.qbx_core:GetPlayer(source)
@@ -60,7 +60,7 @@ lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(source, c
 			Wait(10000)
 		end
 		DeleteEntity(truck)
-		exports.qbx_core:Notify(source, locale('truck_escaped'), 'error')
+		exports.qbx_core:Notify(source, locale('error.truck_escaped'), 'error')
 	end)
 	CreateThread(function()
         local closestPlayer = nil
