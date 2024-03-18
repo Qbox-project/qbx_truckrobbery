@@ -40,7 +40,7 @@ local function spawnGuardInSeat(seat, weapon)
 		end
 	end, "guard does not exist")
 	GiveWeaponToPed(guard, weapon, 250, false, true)
-	for i = 1, 50 do
+	for _ = 1, 50 do
 		Wait(0)
 		SetPedIntoVehicle(guard, truck, seat)
 
