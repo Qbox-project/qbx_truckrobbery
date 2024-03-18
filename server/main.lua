@@ -32,11 +32,22 @@ lib.callback.register('qbx_truckrobbery:server:startMission', function(source)
 end)
 
 local function spawnGuardInSeat(seat, weapon)
-	local guard = CreatePedInsideVehicle(truck, 26, config.guardModel, seat, true, false)
+	local coords = GetEntityCoords(truck)
+	local guard = CreatePed(26, config.guardModel, coords.x, coords.y, coords.z, 0, true, false)
 	lib.waitFor(function()
-		return DoesEntityExist(guard) or nil
+		if DoesEntityExist(guard) then
+			return true
+		end
 	end, "guard does not exist")
 	GiveWeaponToPed(guard, weapon, 250, false, true)
+	for i = 1, 50 do
+		Wait(0)
+		SetPedIntoVehicle(guard, truck, seat)
+
+		if GetVehiclePedIsIn(guard, false) == truck then
+			break
+		end
+	end
 	Entity(guard).state:set('qbx_truckrobbery:initGuard', true, true)
 	Wait(0)
 end
