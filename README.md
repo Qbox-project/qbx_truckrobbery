@@ -1,3 +1,4 @@
+![image](https://github.com/Qbox-project/qbx_truckrobbery/assets/3579092/3cca1b05-e993-4b1f-bcf8-872c10096e84)
 # qbx_truckrobbery
 
 Heist to stop and rob a moving bank truck. After stopping the truck, player's must plant explosives on the back door and blow it off to access to the loot inside.
