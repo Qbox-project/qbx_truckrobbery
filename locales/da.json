@@ -1,0 +1,31 @@
+{
+    "error": {
+        "activation_cost": "Du skal bruge DKK%s for at kunne acceptere denne mission...",
+        "get_out_water": "Du skal komme op af vandet, før du planter bomben...",
+        "truck_moving": "Du kan ikke røve en lastbil, mens den er i bevægelse...",
+        "missing_bomb": "Det ser ud til, at du ikke har en bombe...",
+        "active_police": "Du skal have mindst %s politifolk for at aktivere denne mission...",
+        "already_active": "Nogen udfører allerede en mission...",
+        "no_truck_spawned": "Der ser ud til at være et problem med at generere den pansrede lastbil...",
+        "truck_escaped": "Lastbilen er undsluppet! Missionen mislykkedes."
+    },
+    "success": {
+        "looted": "Du har succesfuldt plyndret lastbilen"
+    },
+    "mission": {
+        "ask_for_mission": "Spørg efter en mission",
+        "sender": "Chefen",
+        "subject": "Ny målsætning",
+        "message": "Så du er interesseret i at tjene lidt penge, hva'? Godt. Sender dig placeringen nu. Du bør skynde dig, inden nogen andre når at røve denne lastbil først!"
+    },
+    "info": {
+        "plant_bomb": "Plant bomben",
+        "planting_bomb": "Planter bomben...",
+        "bomb_timer": "Timeren er indstillet til %s sekunder! Hold dig væk!",
+        "loot_truck": "Plyndr lastbilen",
+        "looting_truck": "Plyndrer lastbilen...",
+        "alert_title": "Røveriforsøg på pansret lastbil",
+        "alert_desc": "En pansret lastbil bliver røvet!",
+        "truck_spotted": "Lastbilen er blevet spottet! Kom til den, før nogen andre gør det!"
+    }
+}
