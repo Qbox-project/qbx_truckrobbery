@@ -55,7 +55,7 @@ local function lootTruck()
         looting = false
     end)
     while looting do
-        if #(GetEntityCoords(cache.ped) - GetEntityCoords(truck)) > 3 and lib.progressActive() then
+        if #(GetEntityCoords(cache.ped) - GetEntityCoords(truck)) > 6 and lib.progressActive() then
             lib.cancelProgress()
         end
         Wait(1000)
