@@ -1,10 +1,10 @@
 fx_version 'cerulean'
 game 'gta5'
-version '1.0.0'
+version '1.0.1'
 
 description 'qbx_truckrobbery'
 repository 'https://github.com/Qbox-project/qbx_truckrobbery'
-version '1.0.0'
+version '1.0.1'
 
 ox_lib 'locale'
 
