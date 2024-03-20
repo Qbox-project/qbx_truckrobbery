@@ -1,0 +1,31 @@
+{
+    "error": {
+        "activation_cost": "Você precisa de R$%s para aceitar esta missão...",
+        "get_out_water": "Você precisa sair da água antes de plantar a bomba...",
+        "guards_dead": "Todos os guardas devem estar mortos para colocar a bomba...",
+        "truck_moving": "Você não pode roubar um veículo enquanto ele está em movimento...",
+        "missing_bomb": "Parece que você não tem uma bomba...",
+        "active_police": "Você precisa de pelo menos %s policiais para ativar esta missão...",
+        "already_active": "Alguém já está realizando uma missão...",
+        "no_truck_spawned": "Parece que há um problema ao criar o caminhão blindado..."
+    },
+    "success": {
+        "looted": "Você saqueou com sucesso o caminhão"
+    },
+    "mission": {
+        "ask_for_mission": "Pedir uma missão",
+        "sender": "O Chefe",
+        "subject": "Novo Alvo",
+        "message": "Então você está interessado em ganhar um dinheiro, né? Ótimo. Estou enviando a localização agora. É melhor você se apressar antes que alguém atinja esse caminhão primeiro!"
+    },
+    "info": {
+        "plant_bomb": "Plantar a bomba",
+        "planting_bomb": "Plantando a bomba...",
+        "bomb_timer": "Temporizador definido para %s segundos! Mantenha-se afastado!",
+        "loot_truck": "Saquear o caminhão",
+        "looting_truck": "Saqueando o caminhão...",
+        "alert_title": "Tentativa de Roubo de Caminhão Blindado",
+        "alert_desc": "Um caminhão blindado está sendo roubado!",
+        "truck_spotted": "O caminhão foi avistado! Chegue até ele antes que mais alguém o faça!"
+    }
+}
