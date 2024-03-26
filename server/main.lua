@@ -90,7 +90,8 @@ end)
 lib.callback.register('qbx_truckrobbery:server:plantedBomb', function(source)
 	if Entity(truck).state.truckstate ~= TruckState.PLANTABLE then return end
 	if not exports.ox_inventory:RemoveItem(source, sharedConfig.bombItem, 1) then return end
-	Entity(truck).state:set('truckstate', TruckState.PLANTED, true)
+    exports.qbx_core:Notify(source, locale('info.bomb_timer', config.timeToDetonation * 1000), 'inform')
+    Entity(truck).state:set('truckstate', TruckState.PLANTED, true)
 	SetTimeout(config.timeToDetonation * 1000, function()
 		SetVehicleDoorBroken(truck, 2, false)
 		SetVehicleDoorBroken(truck, 3, false)
