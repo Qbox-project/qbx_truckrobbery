@@ -1,0 +1,31 @@
+{
+    "error": {
+        "activation_cost": "Precisas de %s€ para aceitar esta missão...",
+        "get_out_water": "Deves sair da água antes de plantar a bomba...",
+        "truck_moving": "Não podes roubar um veículo enquanto ele estiver em movimento...",
+        "missing_bomb": "Parece que não tens uma bomba...",
+        "active_police": "Precisas de pelo menos %s polícias para ativar esta missão...",
+        "already_active": "Alguém já está a realizar uma missão...",
+        "no_truck_spawned": "Parece que há um problema ao gerar o camião blindado...",
+        "truck_escaped": "O camião escapou! Missão Falhada."
+    },
+    "success": {
+        "looted": "Roubaste com sucesso o camião"
+    },
+    "mission": {
+        "ask_for_mission": "Pedir uma missão",
+        "sender": "O Chefe",
+        "subject": "Novo Alvo",
+        "message": "Então estás interessado em ganhar algum dinheiro, hein? Bom. Estou a enviar-te a localização agora. É melhor apressares-te antes que alguém ataque este camião primeiro!"
+    },
+    "info": {
+        "plant_bomb": "Plantar a bomba",
+        "planting_bomb": "A plantar a bomba...",
+        "bomb_timer": "Temporizador ajustado para %s segundos! Fica afastado!",
+        "loot_truck": "Roubar o camião",
+        "looting_truck": "A roubar o camião...",
+        "alert_title": "Tentativa de Roubo de Camião Blindado",
+        "alert_desc": "Estão a roubar um camião blindado!",
+        "truck_spotted": "O camião foi avistado! Vai até ele antes que alguém o faça!"
+    }
+}
