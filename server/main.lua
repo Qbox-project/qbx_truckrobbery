@@ -4,31 +4,32 @@ local sharedConfig = require 'config.shared'
 local isMissionAvailable = true
 local truck
 
-lib.callback.register('qbx_truckrobbery:server:startMission', function(source)
-	local player = exports.qbx_core:GetPlayer(source)
+RegisterNetEvent('qbx_truckrobbery:server:startMission', function()
+    local src = source
+	local player = exports.qbx_core:GetPlayer(src)
 	if not isMissionAvailable then
-		exports.qbx_core:Notify(source, locale('error.already_active'), 'error')
+		exports.qbx_core:Notify(src, locale('error.already_active'), 'error')
 		return
 	end
 	if player.PlayerData.money.bank < config.activationCost then
-		exports.qbx_core:Notify(source, locale('error.activation_cost', config.activationCost), 'error')
+		exports.qbx_core:Notify(src, locale('error.activation_cost', config.activationCost), 'error')
 		return
 	end
 
 	local numCops = exports.qbx_core:GetDutyCountType('leo')
 	if numCops < config.numRequiredPolice then
-		exports.qbx_core:Notify(source, locale('error.active_police', config.numRequiredPolice), 'error')
+		exports.qbx_core:Notify(src, locale('error.active_police', config.numRequiredPolice), 'error')
 		return
 	end
 
 	player.Functions.RemoveMoney('bank', config.activationCost, 'armored-truck')
 	isMissionAvailable = false
     local coords = config.truckSpawns[math.random(1, #config.truckSpawns)]
-	TriggerClientEvent('qbx_truckrobbery:client:missionStarted', source, coords)
+	TriggerClientEvent('qbx_truckrobbery:client:missionStarted', src, coords)
 	Wait(config.missionCooldown)
 	isMissionAvailable = true
 	truck = nil
-	lib.callback('qbx_truckrobbery:client:resetMission', -1)
+    TriggerClientEvent('qbx_truckrobbery:client:missionEnded', -1)
 end)
 
 local function spawnGuardInSeat(seat, weapon)
@@ -87,7 +88,7 @@ lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(source, c
 	return netId
 end)
 
-lib.callback.register('qbx_truckrobbery:server:plantedBomb', function(source)
+RegisterNetEvent('qbx_truckrobbery:server:plantedBomb', function(source)
 	if Entity(truck).state.truckstate ~= TruckState.PLANTABLE then return end
 	if not exports.ox_inventory:RemoveItem(source, sharedConfig.bombItem, 1) then return end
     exports.qbx_core:Notify(source, locale('info.bomb_timer', config.timeToDetonation))
