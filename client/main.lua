@@ -19,7 +19,7 @@ local function resetMission()
     RemoveBlip(area)
 end
 
-lib.callback.register('qbx_truckrobbery:resetMission', resetMission)
+RegisterNetEvent('qbx_truckrobbery:client:missionEnded', resetMission)
 
 local function lootTruck()
     local looting = true
@@ -102,7 +102,7 @@ local function plantBomb()
 		}
 	}) then
 		if Entity(truck).state.truckstate ~= TruckState.PLANTABLE then return end
-		lib.callback('qbx_truckrobbery:server:plantedBomb')
+        TriggerServerEvent('qbx_truckrobbery:server:plantedBomb')
 	end
 end
 
@@ -254,7 +254,7 @@ function dealerPos:onEnter()
             return QBX.PlayerData.job.type ~= 'leo'
         end,
         onSelect = function()
-            lib.callback('qbx_truckrobbery:server:startMission')
+            TriggerServerEvent('qbx_truckrobbery:server:startMission')
         end,
         distance = 3.0,
     })
