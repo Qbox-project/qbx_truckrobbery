@@ -238,7 +238,7 @@ local dealerPos = lib.points.new({
 })
 
 function dealerPos:onEnter()
-    lib.requestModel(config.dealerModel, 5000)
+    lib.requestModel(config.dealerModel, 10000)
     dealer = CreatePed(26, config.dealerModel, config.dealerCoords.x, config.dealerCoords.y, config.dealerCoords.z, config.dealerCoords.w, false, false)
     SetModelAsNoLongerNeeded(config.dealerModel)
     TaskStartScenarioInPlace(dealer, 'WORLD_HUMAN_AA_SMOKE', 0, false)
