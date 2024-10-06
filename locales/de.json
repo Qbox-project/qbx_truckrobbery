@@ -1,0 +1,31 @@
+{
+    "error": {
+        "activation_cost": "Du benötigst $%s, um diese Mission anzunehmen...",
+        "get_out_water": "Du musst aus dem Wasser raus, bevor du die Bombe platzierst...",
+        "truck_moving": "Du kannst kein Fahrzeug ausrauben, während es sich bewegt...",
+        "missing_bomb": "Es scheint, als hättest du keine Bombe...",
+        "active_police": "Du benötigst mindestens %s Polizisten, um diese Mission zu aktivieren...",
+        "already_active": "Jemand führt bereits eine Mission durch...",
+        "no_truck_spawned": "Es scheint ein Problem beim Spawnen des gepanzerten Lastwagens zu geben...",
+        "truck_escaped": "Der Lastwagen ist entkommen! Mission fehlgeschlagen."
+    },
+    "success": {
+        "looted": "Du hast den Lastwagen erfolgreich ausgeraubt"
+    },
+    "mission": {
+        "ask_for_mission": "Nach einer Mission fragen",
+        "sender": "Der Boss",
+        "subject": "Neues Ziel",
+        "message": "Also, du bist daran interessiert, etwas Geld zu verdienen, huh? Gut. Ich sende dir jetzt den Standort. Du solltest dich beeilen, bevor jemand anderes diesen Lastwagen zuerst trifft!"
+    },
+    "info": {
+        "plant_bomb": "Bombe platzieren",
+        "planting_bomb": "Bombe wird platziert...",
+        "bomb_timer": "Timer auf %s Sekunden eingestellt! Abstand halten!",
+        "loot_truck": "Lastwagen ausrauben",
+        "looting_truck": "Lastwagen wird ausgeraubt...",
+        "alert_title": "Versuch eines Überfalls auf einen gepanzerten Lastwagen",
+        "alert_desc": "Ein gepanzerter Lastwagen wird ausgeraubt!",
+        "truck_spotted": "Der Lastwagen wurde gesichtet! Geh hin, bevor es jemand anderes tut!"
+    }
+}
