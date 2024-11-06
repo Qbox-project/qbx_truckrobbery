@@ -88,7 +88,8 @@ lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(source, c
 	return netId
 end)
 
-RegisterNetEvent('qbx_truckrobbery:server:plantedBomb', function(source)
+RegisterNetEvent('qbx_truckrobbery:server:plantedBomb', function()
+    local source = source
 	if Entity(truck).state.truckstate ~= TruckState.PLANTABLE then return end
 	if not exports.ox_inventory:RemoveItem(source, sharedConfig.bombItem, 1) then return end
     exports.qbx_core:Notify(source, locale('info.bomb_timer', config.timeToDetonation))
