@@ -1,0 +1,31 @@
+{
+  "error": {
+    "activation_cost": "Bu görevi kabul etmek için $%s'e ihtiyacın var...",
+    "get_out_water": "Bombayı yerleştirmeden önce sudan çıkmalısın...",
+    "truck_moving": "Araç hareket halindeyken soygun yapamazsın...",
+    "missing_bomb": "Görünüşe göre bomban yok...",
+    "active_police": "Bu görevi başlatmak için en az %s polis gerekiyor...",
+    "already_active": "Zaten birisi görev yapıyor...",
+    "no_truck_spawned": "Zırhlı kamyonu oluştururken bir sorun oluşmuş gibi görünüyor...",
+    "truck_escaped": "Kamyon kaçtı! Görev başarısız oldu."
+  },
+  "success": {
+    "looted": "Kamyonu başarıyla yağmaladın"
+  },
+  "mission": {
+    "ask_for_mission": "Görev iste",
+    "sender": "Patron",
+    "subject": "Yeni Hedef",
+    "message": "Yani biraz para kazanmakla ilgileniyorsun, ha? Güzel. Şimdi sana konumu gönderiyorum. Başkası bu kamyonu çalmadan önce acele etmen gerek!"
+  },
+  "info": {
+    "plant_bomb": "Bombayı yerleştir",
+    "planting_bomb": "Bombayı yerleştiriyorsun...",
+    "bomb_timer": "Sayaç %s saniyeye ayarlandı! Uzak dur!",
+    "loot_truck": "Kamyonu yağmalayın",
+    "looting_truck": "Kamyon yağmalanıyor...",
+    "alert_title": "Zırhlı Kamyon Soygunu Girişimi",
+    "alert_desc": "Bir zırhlı kamyon soyguna uğruyor!",
+    "truck_spotted": "Kamyon fark edildi! Başkaları gelmeden hemen oraya git!"
+  }
+}
