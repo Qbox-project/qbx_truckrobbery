@@ -1,0 +1,31 @@
+{
+  "error": {
+    "activation_cost": "Potrzebujesz $%s, aby zaakceptować tę misję...",
+    "get_out_water": "Musisz wyjść z wody, aby podłożyć bombę...",
+    "truck_moving": "Nie możesz obrabować pojazdu w ruchu...",
+    "missing_bomb": "Wygląda na to, że nie masz bomby...",
+    "active_police": "Wymaganych jest co najmniej %s policjantów, aby aktywować tę misję...",
+    "already_active": "Ktoś już wykonuje tę misję...",
+    "no_truck_spawned": "Wystąpił problem ze spawnem opancerzonego pojazdu...",
+    "truck_escaped": "Pojazd uciekł! Misja nieudana."
+  },
+  "success": {
+    "looted": "Udało ci się obrabować pojazd"
+  },
+  "mission": {
+    "ask_for_mission": "Zapytaj o misję",
+    "sender": "Szef",
+    "subject": "Nowy Cel",
+    "message": "Więc interesuje cię zarobek, co? Dobrze. Wysyłam ci lokalizację. Lepiej się pośpiesz, zanim ktoś inny przejmie ten pojazd!"
+  },
+  "info": {
+    "plant_bomb": "Podłóż bombę",
+    "planting_bomb": "Podkładanie bomby...",
+    "bomb_timer": "Zegar ustawiony na %s sekund! Odsuń się!",
+    "loot_truck": "Oszukaj pojazd",
+    "looting_truck": "Okradanie pojazdu...",
+    "alert_title": "Próba napadu na opancerzony pojazd",
+    "alert_desc": "Opancerzony pojazd jest okradany!",
+    "truck_spotted": "Pojazd został zauważony! Dotrzyj do niego przed innymi!"
+  }
+}
