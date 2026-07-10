@@ -1,0 +1,31 @@
+{
+    "error": {
+        "activation_cost": "Necesitas $%s para aceptar esta misión...",
+        "get_out_water": "Debes salir del agua antes de plantar la bomba...",
+        "truck_moving": "No se puede robar un vehículo en movimiento...",
+        "missing_bomb": "Parece que no tienes una bomba...",
+        "active_police": "Necesitas al menos %s policías para activar esta misión...",
+        "already_active": "Alguien ya está llevando a cabo una misión...",
+        "no_truck_spawned": "Parece que hay un problema al generar el camión blindado...",
+        "truck_escaped": "¡El camión se ha escapado! Misión fallida."
+    },
+    "success": {
+        "looted": "Has saqueado el camión con éxito"
+    },
+    "mission": {
+        "ask_for_mission": "Pide una misión",
+        "sender": "El jefe",
+        "subject": "Nuevo objetivo",
+        "message": "Así que te interesa ganar algo de dinero, ¿eh? Bien. Te envío la ubicación ahora mismo. ¡Date prisa antes de que alguien más se lleve este camión!"
+    },
+    "info": {
+        "plant_bomb": "Planta la bomba",
+        "planting_bomb": "Plantando la bomba...",
+        "bomb_timer": "¡Temporizador configurado en %s segundos! ¡Apártense!",
+        "loot_truck": "Saquea el camión",
+        "looting_truck": "Saqueando el camión...",
+        "alert_title": "Intento de robo a un camión blindado",
+        "alert_desc": "¡Están robando un camión blindado!",
+        "truck_spotted": "¡El camión ha sido avistado! ¡Arrebátalo antes de que lo haga alguien más!"
+    }
+}
