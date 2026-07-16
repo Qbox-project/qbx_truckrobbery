@@ -3,10 +3,37 @@ local config = require 'config.server'
 local sharedConfig = require 'config.shared'
 local isMissionAvailable = true
 local truck
+local missionOwner
+local missionSource
+local missionSpawn
+local missionSequence = 0
+
+local function isNear(source, coords, maxDistance)
+    local ped = GetPlayerPed(source)
+    return ped ~= 0 and #(GetEntityCoords(ped) - coords) <= maxDistance
+end
+
+local function isMissionOwner(source)
+    if source ~= missionSource then return false end
+    local player = exports.qbx_core:GetPlayer(source)
+    return player and player.PlayerData.citizenid == missionOwner
+end
+
+local function endMission()
+    isMissionAvailable = true
+    if truck and DoesEntityExist(truck) then DeleteEntity(truck) end
+    truck = nil
+    missionOwner = nil
+    missionSource = nil
+    missionSpawn = nil
+    TriggerClientEvent('qbx_truckrobbery:client:missionEnded', -1)
+end
 
 RegisterNetEvent('qbx_truckrobbery:server:startMission', function()
     local src = source
 	local player = exports.qbx_core:GetPlayer(src)
+	if not player or player.PlayerData.job.type == 'leo' then return end
+	if not isNear(src, config.dealerCoords, 5.0) then return end
 	if not isMissionAvailable then
 		exports.qbx_core:Notify(src, locale('error.already_active'), 'error')
 		return
@@ -22,14 +49,17 @@ RegisterNetEvent('qbx_truckrobbery:server:startMission', function()
 		return
 	end
 
-	player.Functions.RemoveMoney('bank', config.activationCost, 'armored-truck')
+	if not player.Functions.RemoveMoney('bank', config.activationCost, 'armored-truck') then return end
 	isMissionAvailable = false
     local coords = config.truckSpawns[math.random(1, #config.truckSpawns)]
+	missionSequence += 1
+	local missionId = missionSequence
+	missionOwner = player.PlayerData.citizenid
+	missionSource = src
+	missionSpawn = coords
 	TriggerClientEvent('qbx_truckrobbery:client:missionStarted', src, coords)
 	Wait(config.missionCooldown)
-	isMissionAvailable = true
-	truck = nil
-    TriggerClientEvent('qbx_truckrobbery:client:missionEnded', -1)
+	if missionId == missionSequence then endMission() end
 end)
 
 local function spawnGuardInSeat(seat, weapon)
@@ -53,9 +83,14 @@ local function spawnGuardInSeat(seat, weapon)
 	Wait(0)
 end
 
-lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(source, coords)
-    local netId, veh = qbx.spawnVehicle({spawnSource = coords, model = config.truckModel})
+lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(source)
+	if not isMissionOwner(source) or isMissionAvailable or truck or not missionSpawn then return end
+	if not isNear(source, missionSpawn.xyz, 300.0) then return end
+
+    local netId, veh = qbx.spawnVehicle({spawnSource = missionSpawn, model = config.truckModel})
+	if not netId or not veh or veh == 0 then return end
 	truck = veh
+	local spawnedTruck = veh
 	SetVehicleDoorsLocked(truck, 2)
     local state = Entity(truck).state
     state:set('truckstate', TruckState.PLANTABLE, true)
@@ -65,44 +100,51 @@ lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(source, c
 	spawnGuardInSeat(1, config.backPassengerWeapon)
 	spawnGuardInSeat(2, config.backPassengerWeapon)
 	CreateThread(function()
-		while NetworkGetEntityOwner(truck) ~= -1 do
+		while DoesEntityExist(spawnedTruck) and NetworkGetEntityOwner(spawnedTruck) ~= -1 do
 			if isMissionAvailable or state.truckstate == TruckState.LOOTED then
 				return
 			end
 			Wait(10000)
 		end
-		DeleteEntity(truck)
+		DeleteEntity(spawnedTruck)
 		exports.qbx_core:Notify(source, locale('error.truck_escaped'), 'error')
 	end)
-	CreateThread(function()
+    CreateThread(function()
         local closestPlayer = nil
         while not closestPlayer do
-            closestPlayer = lib.getClosestPlayer(GetEntityCoords(truck), 5)
+            closestPlayer = lib.getClosestPlayer(GetEntityCoords(spawnedTruck), 5)
 			if isMissionAvailable or state.truckstate == TruckState.PLANTED then
 				return
 			end
 			Wait(10000)
 		end
-		config.alertPolice(closestPlayer, coords)
+		config.alertPolice(closestPlayer, missionSpawn)
 	end)
 	return netId
 end)
 
 RegisterNetEvent('qbx_truckrobbery:server:plantedBomb', function()
-    local source = source
+	local source = source
+	if not isMissionOwner(source) or not truck or not DoesEntityExist(truck) then return end
+	if not isNear(source, GetEntityCoords(truck), 6.0) then return end
 	if Entity(truck).state.truckstate ~= TruckState.PLANTABLE then return end
 	if not exports.ox_inventory:RemoveItem(source, sharedConfig.bombItem, 1) then return end
     exports.qbx_core:Notify(source, locale('info.bomb_timer', config.timeToDetonation))
     Entity(truck).state:set('truckstate', TruckState.PLANTED, true)
+	local missionTruck = truck
+	local missionId = missionSequence
 	SetTimeout(config.timeToDetonation * 1000, function()
-		SetVehicleDoorBroken(truck, 2, false)
-		SetVehicleDoorBroken(truck, 3, false)
-		ApplyForceToEntity(truck, 0, 20.0, 500.0, 0.0, 0.0, 0.0, 0.0, 1, false, true, true, false, true)
-		Entity(truck).state:set('truckstate', TruckState.LOOTABLE, true)
+		if missionId ~= missionSequence or not DoesEntityExist(missionTruck) or Entity(missionTruck).state.truckstate ~= TruckState.PLANTED then return end
+		SetVehicleDoorBroken(missionTruck, 2, false)
+		SetVehicleDoorBroken(missionTruck, 3, false)
+		ApplyForceToEntity(missionTruck, 0, 20.0, 500.0, 0.0, 0.0, 0.0, 0.0, 1, false, true, true, false, true)
+		Entity(missionTruck).state:set('truckstate', TruckState.LOOTABLE, true)
 	end)
 end)
 
 lib.callback.register('qbx_truckrobbery:server:giveReward', function(source)
+	if not isMissionOwner(source) or not truck or not DoesEntityExist(truck) then return end
+	if not isNear(source, GetEntityCoords(truck), 6.0) then return end
 	if Entity(truck).state.truckstate ~= TruckState.LOOTABLE then return end
 	Entity(truck).state:set('truckstate', TruckState.LOOTED, true)
     local cantCarryRewards = {}
@@ -125,4 +167,10 @@ lib.callback.register('qbx_truckrobbery:server:giveReward', function(source)
     end
 	exports.qbx_core:Notify(source, locale('success.looted'), 'success')
 	return true
+end)
+
+AddEventHandler('playerDropped', function()
+    if source ~= missionSource then return end
+    missionSequence += 1
+    endMission()
 end)
