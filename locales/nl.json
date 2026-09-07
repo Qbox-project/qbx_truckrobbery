@@ -1,0 +1,31 @@
+{
+    "error": {
+        "activation_cost": "Je hebt $%snodig om deze missie te aanvaarden...",
+        "get_out_water": "Je moet uit het water komen voordat je de bom plant...",
+        "truck_moving": "Je kunt een voertuig niet beroven terwijl het rijdt...",
+        "missing_bomb": "Het lijkt erop dat je geen bom hebt...",
+        "active_police": "Je hebt minimaal%s-politie nodig om deze missie te activeren...",
+        "already_active": "Iemand voert al een missie uit...",
+        "no_truck_spawned": "Het lijkt erop dat er een probleem is met het voortbrengen van de gepantserde vrachtwagen...",
+        "truck_escaped": "De vrachtwagen is ontsnapt! Missie mislukt."
+    },
+    "success": {
+        "looted": "Je hebt de vrachtwagen met succes geplunderd"
+    },
+    "mission": {
+        "ask_for_mission": "Vraag om een ​​missie",
+        "sender": "De baas",
+        "subject": "Nieuw doel",
+        "message": "Dus je bent geïnteresseerd om wat geld te verdienen, hè? Goed. Ik stuur je nu de locatie. Je kunt maar beter opschieten voordat iemand anders deze vrachtwagen als eerste raakt!"
+    },
+    "info": {
+        "plant_bomb": "Plant de bom",
+        "planting_bomb": "Het plaatsen van de bom...",
+        "bomb_timer": "Timer ingesteld op%sseconden! Blijf duidelijk!",
+        "loot_truck": "Plunder de vrachtwagen",
+        "looting_truck": "De vrachtwagen plunderen...",
+        "alert_title": "Poging tot overval op gepantserde vrachtwagens",
+        "alert_desc": "Een pantserwagen wordt beroofd!",
+        "truck_spotted": "De vrachtwagen is gespot! Ga erheen voordat iemand anders het doet!"
+    }
+}
