@@ -1,5 +1,4 @@
 return {
-    dealerCoords = vec3(960.78, -216.25, 75.25),
     numRequiredPolice = 2, -- Minimum required police to activate mission
     activationCost = 500, -- How much is the activation of the mission (clean from the bank)
     missionCooldown = 2700 * 1000, -- Timer every how many missions you can do, default is 600 seconds
