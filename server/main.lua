@@ -1,5 +1,6 @@
 lib.locale()
 local config = require 'config.server'
+local clientConfig = require 'config.client'
 local sharedConfig = require 'config.shared'
 local isMissionAvailable = true
 local truck
@@ -7,6 +8,8 @@ local missionOwner
 local missionSource
 local missionSpawn
 local missionSequence = 0
+local spawning = false
+local truckState
 
 local function isNear(source, coords, maxDistance)
     local ped = GetPlayerPed(source)
@@ -23,6 +26,8 @@ local function endMission()
     isMissionAvailable = true
     if truck and DoesEntityExist(truck) then DeleteEntity(truck) end
     truck = nil
+    truckState = nil
+    spawning = false
     missionOwner = nil
     missionSource = nil
     missionSpawn = nil
@@ -33,7 +38,7 @@ RegisterNetEvent('qbx_truckrobbery:server:startMission', function()
     local src = source
 	local player = exports.qbx_core:GetPlayer(src)
 	if not player or player.PlayerData.job.type == 'leo' then return end
-	if not isNear(src, config.dealerCoords, 5.0) then return end
+	if not isNear(src, clientConfig.dealerCoords.xyz, 5.0) then return end
 	if not isMissionAvailable then
 		exports.qbx_core:Notify(src, locale('error.already_active'), 'error')
 		return
@@ -84,12 +89,20 @@ local function spawnGuardInSeat(seat, weapon)
 end
 
 lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(source)
-	if not isMissionOwner(source) or isMissionAvailable or truck or not missionSpawn then return end
+	if not isMissionOwner(source) or isMissionAvailable or truck or spawning or not missionSpawn then return end
 	if not isNear(source, missionSpawn.xyz, 300.0) then return end
 
-    local netId, veh = qbx.spawnVehicle({spawnSource = missionSpawn, model = config.truckModel})
-	if not netId or not veh or veh == 0 then return end
+    spawning = true
+    local missionId = missionSequence
+    local success, netId, veh = pcall(qbx.spawnVehicle, {spawnSource = missionSpawn, model = config.truckModel})
+    spawning = false
+	if not success or not netId or not veh or veh == 0 then return end
+    if missionId ~= missionSequence or isMissionAvailable then
+        DeleteEntity(veh)
+        return
+    end
 	truck = veh
+	truckState = TruckState.PLANTABLE
 	local spawnedTruck = veh
 	SetVehicleDoorsLocked(truck, 2)
     local state = Entity(truck).state
@@ -112,6 +125,7 @@ lib.callback.register('qbx_truckrobbery:server:spawnVehicle', function(source)
     CreateThread(function()
         local closestPlayer = nil
         while not closestPlayer do
+			if not DoesEntityExist(spawnedTruck) or missionId ~= missionSequence then return end
             closestPlayer = lib.getClosestPlayer(GetEntityCoords(spawnedTruck), 5)
 			if isMissionAvailable or state.truckstate == TruckState.PLANTED then
 				return
@@ -125,27 +139,32 @@ end)
 
 RegisterNetEvent('qbx_truckrobbery:server:plantedBomb', function()
 	local source = source
-	if not isMissionOwner(source) or not truck or not DoesEntityExist(truck) then return end
+	local player = exports.qbx_core:GetPlayer(source)
+	if not player or player.PlayerData.job.type == 'leo' or not truck or not DoesEntityExist(truck) then return end
 	if not isNear(source, GetEntityCoords(truck), 6.0) then return end
-	if Entity(truck).state.truckstate ~= TruckState.PLANTABLE then return end
+	if truckState ~= TruckState.PLANTABLE then return end
 	if not exports.ox_inventory:RemoveItem(source, sharedConfig.bombItem, 1) then return end
     exports.qbx_core:Notify(source, locale('info.bomb_timer', config.timeToDetonation))
     Entity(truck).state:set('truckstate', TruckState.PLANTED, true)
+	truckState = TruckState.PLANTED
 	local missionTruck = truck
 	local missionId = missionSequence
 	SetTimeout(config.timeToDetonation * 1000, function()
-		if missionId ~= missionSequence or not DoesEntityExist(missionTruck) or Entity(missionTruck).state.truckstate ~= TruckState.PLANTED then return end
+		if missionId ~= missionSequence or not DoesEntityExist(missionTruck) or truckState ~= TruckState.PLANTED then return end
 		SetVehicleDoorBroken(missionTruck, 2, false)
 		SetVehicleDoorBroken(missionTruck, 3, false)
 		ApplyForceToEntity(missionTruck, 0, 20.0, 500.0, 0.0, 0.0, 0.0, 0.0, 1, false, true, true, false, true)
 		Entity(missionTruck).state:set('truckstate', TruckState.LOOTABLE, true)
+		truckState = TruckState.LOOTABLE
 	end)
 end)
 
 lib.callback.register('qbx_truckrobbery:server:giveReward', function(source)
-	if not isMissionOwner(source) or not truck or not DoesEntityExist(truck) then return end
+	local player = exports.qbx_core:GetPlayer(source)
+	if not player or player.PlayerData.job.type == 'leo' or not truck or not DoesEntityExist(truck) then return end
 	if not isNear(source, GetEntityCoords(truck), 6.0) then return end
-	if Entity(truck).state.truckstate ~= TruckState.LOOTABLE then return end
+	if truckState ~= TruckState.LOOTABLE then return end
+	truckState = TruckState.LOOTED
 	Entity(truck).state:set('truckstate', TruckState.LOOTED, true)
     local cantCarryRewards = {}
     local cantCarryRewardsSize = 0
@@ -171,6 +190,7 @@ end)
 
 AddEventHandler('playerDropped', function()
     if source ~= missionSource then return end
+    if truck and DoesEntityExist(truck) then return end
     missionSequence += 1
     endMission()
 end)
